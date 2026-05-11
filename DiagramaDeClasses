@@ -1,0 +1,44 @@
+@startuml
+' Configuração para exibir os ícones clássicos de visibilidade da UML (+, -, #)
+skinparam classAttributeIconSize 0
+
+class Unidade {
+  - nomeFisico : String
+  + transferirVeiculo(veiculo: Veiculo, destino: Unidade) : void
+  + consultarVisibilidadeFrota() : List<Veiculo>
+}
+
+class Veiculo {
+  - placa : String
+  - modelo : String
+  - ano : Integer
+  - chassi : String
+  - status : String
+  - quilometragemAtual : Float
+  - documentosAnexados : List<File>
+  + instanciarVeiculo() : void
+  + atualizarStatus(novoStatus: String) : void
+  + atualizarQuilometragem(km: Float) : void
+}
+
+class Manutencao {
+  - tipo : String
+  - dadosDepreciacao : Float
+  - dataAgendamento : Date
+  + preverDepreciacaoIA() : Float
+  + agendarManutencao() : void
+}
+
+class Contrato {
+  - dadosContrato : String
+  - disponibilidadeTempoReal : Boolean
+  + gerenciarContrato() : void
+  + enviarMensagemWhatsApp() : void
+}
+
+' Relacionamentos (Associações e Multiplicidade)
+Unidade "1" -- "0..*" Veiculo : gerencia >
+Veiculo "1" -- "0..*" Manutencao : submetido a >
+Veiculo "1" -- "0..*" Contrato : vinculado a >
+
+@enduml
