@@ -36,9 +36,19 @@ class Contrato {
   + enviarMensagemWhatsApp() : void
 }
 
+class Cliente {
+  - nome : String
+  - cpfCnpj : String
+  - cnh : String
+  - telefone : String
+  + cadastrar() : void
+  + atualizarDados() : void
+}
+
 ' Relacionamentos (Associações e Multiplicidade)
 Unidade "1" -- "0..*" Veiculo : gerencia >
 Veiculo "1" -- "0..*" Manutencao : submetido a >
-Veiculo "1" -- "0..*" Contrato : vinculado a >
+Veiculo "1" --* "1" Contrato
+Cliente "1" --* "1" Contrato
 
 @enduml
