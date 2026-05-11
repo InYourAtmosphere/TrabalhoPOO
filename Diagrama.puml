@@ -1,0 +1,46 @@
+@startuml
+' Configuração para mostrar os ícones de visibilidade (público/privado) padrão da UML
+skinparam classAttributeIconSize 0
+
+class Cliente {
+  - nome : String
+  - cpfCnpj : String
+  - cnh : String
+  - telefone : String
+  + cadastrar() : void
+  + atualizarDados() : void
+}
+
+class Categoria {
+  - nome : String
+  - valorDiaria : Float
+  + atualizarValor(novoValor: Float) : void
+}
+
+class Veiculo {
+  - placa : String
+  - marca : String
+  - modelo : String
+  - ano : Integer
+  - status : String
+  + alterarStatus(novoStatus: String) : void
+  + registrarManutencao() : void
+}
+
+class Locacao {
+  - dataRetirada : Date
+  - dataDevolucao : Date
+  - kmInicial : Float
+  - kmFinal : Float
+  - valorTotal : Float
+  + calcularValorTotal() : Float
+  + registrarCheckOut() : void
+  + registrarCheckIn() : void
+}
+
+' Relacionamentos
+Categoria "1" -- "0..*" Veiculo : possui >
+Cliente "1" -- "0..*" Locacao : realiza >
+Veiculo "1" -- "0..*" Locacao : possui histórico em >
+
+@enduml
