@@ -1,5 +1,4 @@
 @startuml
-skinparam classAttributeIconSize 0
 
 class VeiculoBuilder {
   - placa : String
@@ -21,6 +20,7 @@ class VeiculoBuilder {
 }
 
 class Veiculo {
+  - id: long
   - placa : String
   - modelo : String
   - ano : Integer
