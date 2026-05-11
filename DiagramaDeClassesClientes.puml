@@ -1,0 +1,27 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class ClienteBuilder {
+  - nome : String
+  - documentoIdentidade : String
+  - cnh : String
+  - telefone : String
+  + ClienteBuilder()
+  + nome(nome: String) : ClienteBuilder
+  + documentoIdentidade(documento: String) : ClienteBuilder
+  + cnh(cnh: String) : ClienteBuilder
+  + telefone(telefone: String) : ClienteBuilder
+  + buildCliente() : Cliente
+}
+
+class Cliente {
+  - id: long
+  - nome : String
+  - documentoIdentidade : String
+  - cnh : String
+  - telefone : String
+  - Cliente()
+  + atualizarDados() : void
+}
+
+Cliente -- ClienteBuilder : construido por
