@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Atores
+actor "Operador / Gerente" as Operador
+actor "Diretoria" as Diretoria
+actor "Sistema (IA / Automação)" as SistemaIA <<Sistema>>
+actor "Cliente" as Cliente
+
+' Fronteira do Sistema
+rectangle "Sistema de Gestão de Locadora" {
+  
+  ' Casos de Uso
+  usecase "Instanciar (Cadastrar) Veículo" as UC1
+  usecase "Editar e Atualizar Dados" as UC2
+  usecase "Transferir Veículo entre Unidades" as UC3
+  
+  usecase "Visualizar Dashboards Estratégicos" as UC4
+  
+  usecase "Prever Depreciação e Manutenção" as UC5
+  usecase "Enviar Notificações via WhatsApp" as UC6
+}
+
+' Relacionamentos
+Operador --> UC1 : "Registra novos ativos"
+Operador --> UC2 : "Atualiza status e KM"
+Operador --> UC3 : "Gestão dinâmica de inventário"
+
+Diretoria --> UC4 : "Apoio à decisão"
+
+SistemaIA --> UC5 : "Usa IA para análise"
+SistemaIA --> UC6 : "Comunicação automatizada"
+
+UC6 --> Cliente : "Recebe atualizações"
+
+@enduml
