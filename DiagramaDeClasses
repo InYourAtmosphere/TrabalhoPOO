@@ -7,18 +7,8 @@ class Unidade {
   + consultarVisibilidadeFrota() : List<Veiculo>
 }
 
-class Veiculo {
-  - placa : String
-  - modelo : String
-  - ano : Integer
-  - chassi : String
-  - status : String
-  - quilometragemAtual : Float
-  - documentosAnexados : List<File>
-  + instanciarVeiculo() : void
-  + atualizarStatus(novoStatus: String) : void
-  + atualizarQuilometragem(km: Float) : void
-}
+class Veiculo
+note top of Veiculo: Definido em DiagramaDeClassesVeiculos.puml
 
 class Manutencao {
   - tipo : String

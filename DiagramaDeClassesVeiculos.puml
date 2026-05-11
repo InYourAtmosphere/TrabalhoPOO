@@ -1,0 +1,37 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class VeiculoBuilder {
+  - placa : String
+  - modelo : String
+  - ano : Integer
+  - chassi : String
+  - status : String
+  - quilometragemAtual : Float
+  - documentosAnexados : List<File>
+  + VeiculoBuilder()
+  + placa(placa: String) : VeiculoBuilder
+  + modelo(modelo: String) : VeiculoBuilder
+  + ano(ano: Integer) : VeiculoBuilder
+  + chassi(chassi: String) : VeiculoBuilder
+  + status(status: String) : VeiculoBuilder
+  + quilometragemAtual(km: Float) : VeiculoBuilder
+  + documentosAnexados(docs: List<File>) : VeiculoBuilder
+  + buildVeiculo() : Veiculo
+}
+
+class Veiculo {
+  - placa : String
+  - modelo : String
+  - ano : Integer
+  - chassi : String
+  - status : String
+  - quilometragemAtual : Float
+  - documentosAnexados : List<File>
+  - Veiculo()
+  + atualizarStatus(novoStatus: String) : void
+  + atualizarQuilometragem(km: Float) : void
+}
+
+Veiculo -- VeiculoBuilder : construido por
+@enduml
