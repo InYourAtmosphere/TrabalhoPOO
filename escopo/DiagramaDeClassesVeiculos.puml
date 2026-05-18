@@ -1,37 +1,26 @@
 @startuml
 
-class VeiculoBuilder {
-  - placa : String
-  - modelo : String
-  - ano : Integer
-  - chassi : String
-  - status : String
-  - quilometragemAtual : Float
-  - documentosAnexados : List<File>
-  + VeiculoBuilder()
-  + placa(placa: String) : VeiculoBuilder
-  + modelo(modelo: String) : VeiculoBuilder
-  + ano(ano: Integer) : VeiculoBuilder
-  + chassi(chassi: String) : VeiculoBuilder
-  + status(status: String) : VeiculoBuilder
-  + quilometragemAtual(km: Float) : VeiculoBuilder
-  + documentosAnexados(docs: List<File>) : VeiculoBuilder
-  + buildVeiculo() : Veiculo
-}
-
 class Veiculo {
   - id: long
   - placa : String
+  - marca : String
   - modelo : String
-  - ano : Integer
+  - ano : Year
   - chassi : String
-  - status : String
-  - quilometragemAtual : Float
+  - status : StatusVeiculo
+  - kmAtual : float
   - documentosAnexados : List<File>
-  - Veiculo()
-  + atualizarStatus(novoStatus: String) : void
-  + atualizarQuilometragem(km: Float) : void
+  - criadoEm : LocalDateTime
+  - atualizadoEm : LocalDateTime
+  + Veiculo()
+  + atualizarStatus(novoStatus: StatusVeiculo) : void
+  + atualizarKm(kmAtual: Float) : void
 }
 
-Veiculo -- VeiculoBuilder : construido por
+enum StatusVeiculo {
+  DISPONIVEL
+  INDISPONIVEL
+  EM_USO
+  MANUTENCAO
+}
 @enduml
