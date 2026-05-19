@@ -1,28 +1,23 @@
 @startuml
-skinparam classAttributeIconSize 0
 
 class Unidade {
-  - nomeFisico : String
+  - id : long
+  - nomeFantasia : String
   + transferirVeiculo(veiculo: Veiculo, destino: Unidade) : void
-  + consultarVisibilidadeFrota() : List<Veiculo>
 }
 
 class Veiculo
 note top of Veiculo: Definido em DiagramaDeClassesVeiculos.puml
 
 class Manutencao {
+  - id : long
   - tipo : String
-  - dadosDepreciacao : Float
-  - dataAgendamento : Date
-  + preverDepreciacaoIA() : Float
-  + agendarManutencao() : void
+  - descricao : float
+  - dataAgendamento : LocalDateTime
 }
 
 class Contrato {
-  - dadosContrato : String
-  - disponibilidadeTempoReal : Boolean
-  + gerenciarContrato() : void
-  + enviarMensagemWhatsApp() : void
+  - id : long
 }
 
 class Cliente
