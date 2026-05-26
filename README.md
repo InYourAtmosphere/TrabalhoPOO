@@ -4,6 +4,18 @@ Trabalho de Programação Orientada a Objetos (POO).
 
 **Autores:** Finéias Antônio, Gabriela Brasileiro, Heitor M A Vaz, Túlio Vitorette.
 
+## 🛠️ Tecnologias Utilizadas
+
+*   **Java 17**
+*   **Spring Boot 3.3**
+*   **PostgreSQL**
+*   **Docker & Docker Compose**
+*   **Lombok**: Biblioteca utilizada para reduzir código repetitivo (Getters/Setters).
+
+## 📖 Documentação do Domínio
+
+Modelagem do domínio 👉 [**DOMAIN_MODEL.md**](./DOMAIN_MODEL.md)
+
 ## 🚀 Como Rodar o Projeto
 
 ### Pré-requisitos
