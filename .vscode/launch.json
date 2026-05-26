@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot (Maven)",
+            "request": "launch",
+            "mainClass": "org.poo.Main",
+            "projectName": "AlugaFacil",
+            "preLaunchTask": "spring-boot:run",
+            "noDebug": true
+        }
+    ]
+}
