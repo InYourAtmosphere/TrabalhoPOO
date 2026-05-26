@@ -1,17 +1,25 @@
 package org.poo.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.poo.model.veiculo.Veiculo;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Unidade {
-    private long id;
-    private String nomeFantasia;
+    @Setter(AccessLevel.NONE)
+    private Long id;
 
-    public void transferirVeiculo(Veiculo veiculo, Unidade destino) {
-    }
+    private String nomeUnidade;
+    private Endereco endereco;
+    private List<Veiculo> veiculos;
 
-    public String getNomeFantasia() {
-        return nomeFantasia;
-    }
-
-    public void setNomeFantasia(String nomeFantasia) {
-        this.nomeFantasia = nomeFantasia;
+    public Unidade() {
+        this.veiculos = new ArrayList<>();
     }
 }

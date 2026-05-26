@@ -2,33 +2,34 @@ package org.poo.model;
 
 import java.time.LocalDateTime;
 
+import org.poo.model.veiculo.Veiculo;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import lombok.AccessLevel;
+
+@Getter
+@Setter
 public class Manutencao {
-    private long id;
-    private String tipo;
-    private float descricao;
-    private LocalDateTime dataAgendamento;
+    @Setter(AccessLevel.NONE)
+    private Long id;
 
-    public String getTipo() {
-        return tipo;
+    private Veiculo veiculo;
+
+    @Setter(AccessLevel.NONE)
+    private LocalDateTime dataInicio;
+
+    private LocalDateTime dataFim;
+    private String descricao;
+    private Double custo;
+    private TipoManutencao tipo;
+
+    public enum TipoManutencao {
+        PREVENTIVA, CORRETIVA, PREDITIVA
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public Float getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(Float dadosDepreciacao) {
-        this.descricao = descricao;
-    }
-
-    public LocalDateTime getDataAgendamento() {
-        return dataAgendamento;
-    }
-
-    public void setDataAgendamento(LocalDateTime dataAgendamento) {
-        this.dataAgendamento = dataAgendamento;
+    public Manutencao() {
+        this.dataInicio = LocalDateTime.now();
     }
 }

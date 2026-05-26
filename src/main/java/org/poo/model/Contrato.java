@@ -1,25 +1,43 @@
 package org.poo.model;
 
+import java.time.LocalDateTime;
+
+import org.poo.model.pessoa.Cliente;
+import org.poo.model.veiculo.Veiculo;
+
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Contrato {
-    private long id;
+    @Setter(AccessLevel.NONE)
+    private Long id;
+
     private Cliente cliente;
     private Veiculo veiculo;
+    private Unidade unidadeRetirada;
+    private Unidade unidadeDevolucao;
 
-    public long getId() {
-        return id;
+    @Setter(AccessLevel.NONE)
+    private LocalDateTime dataInicio;
+
+    private LocalDateTime dataFimPrevista;
+
+    @Setter(AccessLevel.NONE)
+    private LocalDateTime dataFimReal;
+
+    private Double valorDiaria;
+    private Double valorTotal;
+    private StatusContrato status;
+
+    public enum StatusContrato {
+        ATIVO, FINALIZADO, CANCELADO
     }
 
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public Veiculo getVeiculo() {
-        return veiculo;
-    }
-
-    public void gerenciarContrato() {
-    }
-
-    public void enviarMensagemWhatsApp() {
+    public Contrato() {
+        this.dataInicio = LocalDateTime.now();
+        this.status = StatusContrato.ATIVO;
     }
 }
