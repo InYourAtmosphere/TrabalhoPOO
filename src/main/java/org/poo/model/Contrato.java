@@ -12,7 +12,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Contrato {
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     private Cliente cliente;
@@ -20,12 +19,10 @@ public class Contrato {
     private Unidade unidadeRetirada;
     private Unidade unidadeDevolucao;
 
-    @Setter(AccessLevel.NONE)
     private LocalDateTime dataInicio;
 
     private LocalDateTime dataFimPrevista;
 
-    @Setter(AccessLevel.NONE)
     private LocalDateTime dataFimReal;
 
     private Double valorDiaria;

@@ -9,7 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class Veiculo {
-    @Setter(AccessLevel.NONE)
     private Long id;
     private String marca;
     private String modelo;
@@ -19,10 +18,8 @@ public abstract class Veiculo {
     private Double kmAtual;
     private StatusVeiculo status;
 
-    @Setter(AccessLevel.NONE)
     private LocalDateTime dataCadastro;
 
-    @Setter(AccessLevel.NONE)
     private LocalDateTime atualizadoEm;
 
     public Veiculo() {

@@ -12,7 +12,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Unidade {
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     private String nomeUnidade;

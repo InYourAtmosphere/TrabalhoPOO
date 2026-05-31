@@ -12,12 +12,10 @@ import lombok.AccessLevel;
 @Getter
 @Setter
 public class Manutencao {
-    @Setter(AccessLevel.NONE)
     private Long id;
 
     private Veiculo veiculo;
 
-    @Setter(AccessLevel.NONE)
     private LocalDateTime dataInicio;
 
     private LocalDateTime dataFim;
