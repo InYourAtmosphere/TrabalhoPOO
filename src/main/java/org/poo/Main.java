@@ -14,6 +14,7 @@ public class Main {
         Connection c;
         try {
             c = DatabaseConfig.getConnection();
+            DatabaseConfig.initializeDatabase();
             System.out.println("Conexão com o banco de dados estabelecida com sucesso! " + c.toString());
         } catch (SQLException e) {
             e.printStackTrace();

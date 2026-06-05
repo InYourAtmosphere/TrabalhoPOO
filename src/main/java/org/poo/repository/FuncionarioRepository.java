@@ -32,21 +32,23 @@ public class FuncionarioRepository {
     }
 
     private Funcionario insert(Funcionario funcionario) {
-        String sql = "INSERT INTO funcionarios (nome, telefone, email, data_cadastro, matricula, cargo, unidade_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO funcionarios (nome, telefone, email, username, password, data_cadastro, matricula, cargo, unidade_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             stmt.setString(1, funcionario.getNome());
             stmt.setString(2, funcionario.getTelefone());
             stmt.setString(3, funcionario.getEmail());
-            stmt.setTimestamp(4, Timestamp.valueOf(funcionario.getDataCadastro()));
-            stmt.setString(5, funcionario.getMatricula());
-            stmt.setString(6, funcionario.getCargo());
+            stmt.setString(4, funcionario.getUsername());
+            stmt.setString(5, funcionario.getPassword());
+            stmt.setTimestamp(6, Timestamp.valueOf(funcionario.getDataCadastro()));
+            stmt.setString(7, funcionario.getMatricula());
+            stmt.setString(8, funcionario.getCargo());
             
             if (funcionario.getUnidade() != null) {
-                stmt.setLong(7, funcionario.getUnidade().getId());
+                stmt.setLong(9, funcionario.getUnidade().getId());
             } else {
-                stmt.setNull(7, java.sql.Types.BIGINT);
+                stmt.setNull(9, java.sql.Types.BIGINT);
             }
 
             int affectedRows = stmt.executeUpdate();
@@ -66,22 +68,24 @@ public class FuncionarioRepository {
     }
 
     private Funcionario update(Funcionario funcionario) {
-        String sql = "UPDATE funcionarios SET nome = ?, telefone = ?, email = ?, matricula = ?, cargo = ?, unidade_id = ? WHERE id = ?";
+        String sql = "UPDATE funcionarios SET nome = ?, telefone = ?, email = ?, username = ?, password = ?, matricula = ?, cargo = ?, unidade_id = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, funcionario.getNome());
             stmt.setString(2, funcionario.getTelefone());
             stmt.setString(3, funcionario.getEmail());
-            stmt.setString(4, funcionario.getMatricula());
-            stmt.setString(5, funcionario.getCargo());
+            stmt.setString(4, funcionario.getUsername());
+            stmt.setString(5, funcionario.getPassword());
+            stmt.setString(6, funcionario.getMatricula());
+            stmt.setString(7, funcionario.getCargo());
             
             if (funcionario.getUnidade() != null) {
-                stmt.setLong(6, funcionario.getUnidade().getId());
+                stmt.setLong(8, funcionario.getUnidade().getId());
             } else {
-                stmt.setNull(6, java.sql.Types.BIGINT);
+                stmt.setNull(8, java.sql.Types.BIGINT);
             }
-            stmt.setLong(7, funcionario.getId());
+            stmt.setLong(9, funcionario.getId());
 
             stmt.executeUpdate();
             return funcionario;
@@ -138,12 +142,31 @@ public class FuncionarioRepository {
         }
     }
 
+    public Optional<Funcionario> findByUsername(String username) {
+        String sql = "SELECT * FROM funcionarios WHERE username = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapResultSetToFuncionario(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar funcionario por username", e);
+        }
+        return Optional.empty();
+    }
+
     private Funcionario mapResultSetToFuncionario(ResultSet rs) throws SQLException {
         Funcionario funcionario = new Funcionario();
         funcionario.setId(rs.getLong("id"));
         funcionario.setNome(rs.getString("nome"));
         funcionario.setTelefone(rs.getString("telefone"));
         funcionario.setEmail(rs.getString("email"));
+        funcionario.setUsername(rs.getString("username"));
+        funcionario.setPassword(rs.getString("password"));
         funcionario.setMatricula(rs.getString("matricula"));
         funcionario.setCargo(rs.getString("cargo"));
         

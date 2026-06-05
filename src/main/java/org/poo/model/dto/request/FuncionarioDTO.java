@@ -15,11 +15,14 @@ public class FuncionarioDTO {
     private String email;
     private String matricula;
     private String cargo;
+    private String username;
+    private String password;
     private Long unidadeId;
 
     public void validate() {
         if (nome == null || nome.isBlank()) throw new IllegalArgumentException("Nome é obrigatório");
         if (matricula == null || matricula.isBlank()) throw new IllegalArgumentException("Matrícula é obrigatória");
+        if (username == null || username.isBlank()) throw new IllegalArgumentException("Username é obrigatório");
         if (unidadeId == null) throw new IllegalArgumentException("ID da unidade é obrigatório");
     }
 }

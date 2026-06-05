@@ -4,6 +4,7 @@ import org.poo.model.pessoa.Funcionario;
 import org.poo.model.dto.request.FuncionarioDTO;
 import org.poo.repository.FuncionarioRepository;
 import org.poo.repository.UnidadeRepository;
+import org.poo.util.PasswordUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,22 +36,23 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public ResponseEntity<?> cadastrarFuncionario(@RequestBody FuncionarioDTO dto) {
-        try {
-            dto.validate();
-            Funcionario funcionario = new Funcionario();
-            funcionario.setNome(dto.getNome());
-            funcionario.setTelefone(dto.getTelefone());
-            funcionario.setEmail(dto.getEmail());
-            funcionario.setMatricula(dto.getMatricula());
-            funcionario.setCargo(dto.getCargo());
-            
-            unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionario::setUnidade);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioRepository.save(funcionario));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<Funcionario> cadastrarFuncionario(@RequestBody FuncionarioDTO dto) {
+        dto.validate();
+        Funcionario funcionario = new Funcionario();
+        funcionario.setNome(dto.getNome());
+        funcionario.setTelefone(dto.getTelefone());
+        funcionario.setEmail(dto.getEmail());
+        funcionario.setMatricula(dto.getMatricula());
+        funcionario.setCargo(dto.getCargo());
+        funcionario.setUsername(dto.getUsername());
+
+        if (dto.getPassword() != null) {
+            funcionario.setPassword(PasswordUtils.hashPassword(dto.getPassword()));
         }
+
+        unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionario::setUnidade);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioRepository.save(funcionario));
     }
 
     @DeleteMapping("/{id}")
