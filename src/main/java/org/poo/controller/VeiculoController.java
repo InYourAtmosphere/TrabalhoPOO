@@ -3,7 +3,7 @@ package org.poo.controller;
 import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
-import org.poo.model.dto.UpdateVeiculoDTO;
+import org.poo.model.dto.request.UpdateVeiculoDTO;
 import org.poo.repository.VeiculoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,23 +56,28 @@ public class VeiculoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Veiculo> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates) {
-        return veiculoRepository.findById(id).map(veiculo -> {
-            if (updates.getMarca() != null) veiculo.setMarca(updates.getMarca());
-            if (updates.getModelo() != null) veiculo.setModelo(updates.getModelo());
-            if (updates.getAno() != null) veiculo.setAno(updates.getAno());
-            if (updates.getPlaca() != null) veiculo.setPlaca(updates.getPlaca());
-            if (updates.getKmAtual() != null) veiculo.setKmAtual(updates.getKmAtual());
-            
-            if (veiculo instanceof CarroPopular carro) {
-                if (updates.getQuantidadePortas() != null) carro.setQuantidadePortas(updates.getQuantidadePortas());
-                if (updates.getTemArCondicionado() != null) carro.setTemArCondicionado(updates.getTemArCondicionado());
-            } else if (veiculo instanceof Motocicleta moto) {
-                if (updates.getCilindrada() != null) moto.setCilindrada(updates.getCilindrada());
-                if (updates.getTemBau() != null) moto.setTemBau(updates.getTemBau());
-            }
-            
-            return ResponseEntity.ok(veiculoRepository.save(veiculo));
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates) {
+        try {
+            updates.validate();
+            return veiculoRepository.findById(id).map(veiculo -> {
+                if (updates.getMarca() != null) veiculo.setMarca(updates.getMarca());
+                if (updates.getModelo() != null) veiculo.setModelo(updates.getModelo());
+                if (updates.getAno() != null) veiculo.setAno(updates.getAno());
+                if (updates.getPlaca() != null) veiculo.setPlaca(updates.getPlaca());
+                if (updates.getKmAtual() != null) veiculo.setKmAtual(updates.getKmAtual());
+                
+                if (veiculo instanceof CarroPopular carro) {
+                    if (updates.getQuantidadePortas() != null) carro.setQuantidadePortas(updates.getQuantidadePortas());
+                    if (updates.getTemArCondicionado() != null) carro.setTemArCondicionado(updates.getTemArCondicionado());
+                } else if (veiculo instanceof Motocicleta moto) {
+                    if (updates.getCilindrada() != null) moto.setCilindrada(updates.getCilindrada());
+                    if (updates.getTemBau() != null) moto.setTemBau(updates.getTemBau());
+                }
+                
+                return (ResponseEntity<?>) ResponseEntity.ok(veiculoRepository.save(veiculo));
+            }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
