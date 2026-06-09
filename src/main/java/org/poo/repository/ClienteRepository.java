@@ -26,7 +26,7 @@ public class ClienteRepository {
     }
 
     private Cliente insert(Cliente cliente) {
-        String sql = "INSERT INTO clientes (nome, telefone, email, data_cadastro, documento_identidade, documento_habilitacao, logradouro, numero, complemento, bairro, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO clientes (nome, telefone, email, data_cadastro, documento_identidade, documento_habilitacao, logradouro, numero, complemento, bairro, cidade, estado, cep, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -48,6 +48,7 @@ public class ClienteRepository {
             } else {
                 for (int i = 7; i <= 13; i++) stmt.setNull(i, java.sql.Types.VARCHAR);
             }
+            stmt.setBoolean(14, cliente.isAtivo());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -66,7 +67,7 @@ public class ClienteRepository {
     }
 
     private Cliente update(Cliente cliente) {
-        String sql = "UPDATE clientes SET nome = ?, telefone = ?, email = ?, documento_identidade = ?, documento_habilitacao = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id = ?";
+        String sql = "UPDATE clientes SET nome = ?, telefone = ?, email = ?, documento_identidade = ?, documento_habilitacao = ?, logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ?, ativo = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -87,7 +88,8 @@ public class ClienteRepository {
             } else {
                 for (int i = 6; i <= 12; i++) stmt.setNull(i, java.sql.Types.VARCHAR);
             }
-            stmt.setLong(13, cliente.getId());
+            stmt.setBoolean(13, cliente.isAtivo());
+            stmt.setLong(14, cliente.getId());
 
             stmt.executeUpdate();
             return cliente;
@@ -98,7 +100,7 @@ public class ClienteRepository {
 
     
     public Optional<Cliente> findById(Long id) {
-        String sql = "SELECT * FROM clientes WHERE id = ?";
+        String sql = "SELECT * FROM clientes WHERE id = ? AND ativo = TRUE";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -116,7 +118,7 @@ public class ClienteRepository {
 
     
     public List<Cliente> findAll() {
-        String sql = "SELECT * FROM clientes";
+        String sql = "SELECT * FROM clientes WHERE ativo = TRUE";
         List<Cliente> clientes = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -133,14 +135,14 @@ public class ClienteRepository {
 
     
     public void deleteById(Long id) {
-        String sql = "DELETE FROM clientes WHERE id = ?";
+        String sql = "UPDATE clientes SET ativo = FALSE WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar cliente", e);
+            throw new RuntimeException("Erro ao deletar cliente (logicamente)", e);
         }
     }
 
@@ -167,6 +169,7 @@ public class ClienteRepository {
         endereco.setEstado(rs.getString("estado"));
         endereco.setCep(rs.getString("cep"));
         cliente.setEndereco(endereco);
+        cliente.setAtivo(rs.getBoolean("ativo"));
         
         return cliente;
     }

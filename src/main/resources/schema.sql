@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS clientes (
     bairro VARCHAR(100),
     cidade VARCHAR(100),
     estado VARCHAR(50),
-    cep VARCHAR(20)
+    cep VARCHAR(20),
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS funcionarios (
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS funcionarios (
     matricula VARCHAR(50) NOT NULL UNIQUE,
     cargo VARCHAR(50),
     unidade_id BIGINT,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT fk_funcionario_unidade FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE SET NULL
 );
 
@@ -55,7 +57,8 @@ CREATE TABLE IF NOT EXISTS veiculos (
     qtd_portas INTEGER,
     tem_ar_condicionado BOOLEAN,
     cilindrada INTEGER,
-    tem_bau BOOLEAN
+    tem_bau BOOLEAN,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS contratos (

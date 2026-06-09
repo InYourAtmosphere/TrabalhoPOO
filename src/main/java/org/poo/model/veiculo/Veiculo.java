@@ -22,6 +22,8 @@ public abstract class Veiculo {
 
     private LocalDateTime atualizadoEm;
 
+    private boolean ativo = true;
+
     public Veiculo() {
         this.dataCadastro = LocalDateTime.now();
         this.status = StatusVeiculo.DISPONIVEL;

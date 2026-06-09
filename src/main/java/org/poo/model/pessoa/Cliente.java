@@ -11,4 +11,5 @@ public class Cliente extends Pessoa {
     private String documentoIdentidade;
     private String documentoHabilitacao;
     private Endereco endereco;
+    private boolean ativo = true;
 }

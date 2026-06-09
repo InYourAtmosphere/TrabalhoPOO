@@ -32,7 +32,7 @@ public class FuncionarioRepository {
     }
 
     private Funcionario insert(Funcionario funcionario) {
-        String sql = "INSERT INTO funcionarios (nome, telefone, email, username, password, data_cadastro, matricula, cargo, unidade_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO funcionarios (nome, telefone, email, username, password, data_cadastro, matricula, cargo, unidade_id, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -50,6 +50,7 @@ public class FuncionarioRepository {
             } else {
                 stmt.setNull(9, java.sql.Types.BIGINT);
             }
+            stmt.setBoolean(10, funcionario.isAtivo());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -68,7 +69,7 @@ public class FuncionarioRepository {
     }
 
     private Funcionario update(Funcionario funcionario) {
-        String sql = "UPDATE funcionarios SET nome = ?, telefone = ?, email = ?, username = ?, password = ?, matricula = ?, cargo = ?, unidade_id = ? WHERE id = ?";
+        String sql = "UPDATE funcionarios SET nome = ?, telefone = ?, email = ?, username = ?, password = ?, matricula = ?, cargo = ?, unidade_id = ?, ativo = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -85,7 +86,8 @@ public class FuncionarioRepository {
             } else {
                 stmt.setNull(8, java.sql.Types.BIGINT);
             }
-            stmt.setLong(9, funcionario.getId());
+            stmt.setBoolean(9, funcionario.isAtivo());
+            stmt.setLong(10, funcionario.getId());
 
             stmt.executeUpdate();
             return funcionario;
@@ -96,7 +98,7 @@ public class FuncionarioRepository {
 
     
     public Optional<Funcionario> findById(Long id) {
-        String sql = "SELECT * FROM funcionarios WHERE id = ?";
+        String sql = "SELECT * FROM funcionarios WHERE id = ? AND ativo = TRUE";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -114,7 +116,7 @@ public class FuncionarioRepository {
 
     
     public List<Funcionario> findAll() {
-        String sql = "SELECT * FROM funcionarios";
+        String sql = "SELECT * FROM funcionarios WHERE ativo = TRUE";
         List<Funcionario> funcionarios = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -131,19 +133,19 @@ public class FuncionarioRepository {
 
     
     public void deleteById(Long id) {
-        String sql = "DELETE FROM funcionarios WHERE id = ?";
+        String sql = "UPDATE funcionarios SET ativo = FALSE WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar funcionario", e);
+            throw new RuntimeException("Erro ao deletar funcionario (logicamente)", e);
         }
     }
 
     public Optional<Funcionario> findByUsername(String username) {
-        String sql = "SELECT * FROM funcionarios WHERE username = ?";
+        String sql = "SELECT * FROM funcionarios WHERE username = ? AND ativo = TRUE";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -179,6 +181,7 @@ public class FuncionarioRepository {
         if (!rs.wasNull()) {
             unidadeRepository.findById(unidadeId).ifPresent(funcionario::setUnidade);
         }
+        funcionario.setAtivo(rs.getBoolean("ativo"));
         
         return funcionario;
     }

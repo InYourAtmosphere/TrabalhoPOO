@@ -28,7 +28,7 @@ public class VeiculoRepository {
     }
 
     private Veiculo insert(Veiculo veiculo) {
-        String sql = "INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, data_cadastro, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, data_cadastro, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -56,6 +56,7 @@ public class VeiculoRepository {
                 stmt.setInt(12, moto.getCilindrada());
                 stmt.setBoolean(13, moto.isTemBau());
             }
+            stmt.setBoolean(14, veiculo.isAtivo());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -74,7 +75,7 @@ public class VeiculoRepository {
     }
 
     private Veiculo update(Veiculo veiculo) {
-        String sql = "UPDATE veiculos SET marca = ?, modelo = ?, ano = ?, placa = ?, chassi = ?, km_atual = ?, status = ?, qtd_portas = ?, tem_ar_condicionado = ?, cilindrada = ?, tem_bau = ? WHERE id = ?";
+        String sql = "UPDATE veiculos SET marca = ?, modelo = ?, ano = ?, placa = ?, chassi = ?, km_atual = ?, status = ?, qtd_portas = ?, tem_ar_condicionado = ?, cilindrada = ?, tem_bau = ?, ativo = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -99,7 +100,8 @@ public class VeiculoRepository {
                 stmt.setInt(10, moto.getCilindrada());
                 stmt.setBoolean(11, moto.isTemBau());
             }
-            stmt.setLong(12, veiculo.getId());
+            stmt.setBoolean(12, veiculo.isAtivo());
+            stmt.setLong(13, veiculo.getId());
 
             stmt.executeUpdate();
             return veiculo;
@@ -110,7 +112,7 @@ public class VeiculoRepository {
 
     
     public Optional<Veiculo> findById(Long id) {
-        String sql = "SELECT * FROM veiculos WHERE id = ?";
+        String sql = "SELECT * FROM veiculos WHERE id = ? AND ativo = TRUE";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -128,7 +130,7 @@ public class VeiculoRepository {
 
     
     public List<Veiculo> findAll() {
-        String sql = "SELECT * FROM veiculos";
+        String sql = "SELECT * FROM veiculos WHERE ativo = TRUE";
         List<Veiculo> veiculos = new ArrayList<>();
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
@@ -145,14 +147,14 @@ public class VeiculoRepository {
 
     
     public void deleteById(Long id) {
-        String sql = "DELETE FROM veiculos WHERE id = ?";
+        String sql = "UPDATE veiculos SET ativo = FALSE WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar veiculo", e);
+            throw new RuntimeException("Erro ao deletar veiculo (logicamente)", e);
         }
     }
 
@@ -185,6 +187,7 @@ public class VeiculoRepository {
         if (dataCadastro != null) {
             veiculo.setDataCadastro(dataCadastro.toLocalDateTime());
         }
+        veiculo.setAtivo(rs.getBoolean("ativo"));
         
         return veiculo;
     }

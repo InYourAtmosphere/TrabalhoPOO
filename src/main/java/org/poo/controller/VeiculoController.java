@@ -80,4 +80,13 @@ public class VeiculoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarVeiculo(@PathVariable Long id) {
+        if (veiculoRepository.findById(id).isPresent()) {
+            veiculoRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

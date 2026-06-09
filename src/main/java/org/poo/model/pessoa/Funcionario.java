@@ -13,4 +13,5 @@ public class Funcionario extends Pessoa {
     private String username;
     private String password;
     private Unidade unidade;
+    private boolean ativo = true;
 }
