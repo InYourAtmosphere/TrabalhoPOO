@@ -1,7 +1,9 @@
 package org.poo.controller;
 
 import org.poo.model.pessoa.Funcionario;
+import org.poo.model.pessoa.Cargo;
 import org.poo.model.dto.request.FuncionarioDTO;
+import org.poo.model.dto.request.UpdateFuncionarioDTO;
 import org.poo.repository.FuncionarioRepository;
 import org.poo.repository.UnidadeRepository;
 import org.poo.util.PasswordUtils;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -21,6 +24,11 @@ public class FuncionarioController {
     public FuncionarioController() {
         this.unidadeRepository = new UnidadeRepository();
         this.funcionarioRepository = new FuncionarioRepository(unidadeRepository);
+    }
+
+    private boolean isGerente(HttpServletRequest request) {
+        Funcionario logado = (Funcionario) request.getAttribute("usuarioLogado");
+        return logado != null && logado.getCargo() == Cargo.GERENTE;
     }
 
     @GetMapping
@@ -36,27 +44,61 @@ public class FuncionarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Funcionario> cadastrarFuncionario(@RequestBody FuncionarioDTO dto) {
-        dto.validate();
-        Funcionario funcionario = new Funcionario();
-        funcionario.setNome(dto.getNome());
-        funcionario.setTelefone(dto.getTelefone());
-        funcionario.setEmail(dto.getEmail());
-        funcionario.setMatricula(dto.getMatricula());
-        funcionario.setCargo(dto.getCargo());
-        funcionario.setUsername(dto.getUsername());
-
-        if (dto.getPassword() != null) {
-            funcionario.setPassword(PasswordUtils.hashPassword(dto.getPassword()));
+    public ResponseEntity<?> cadastrarFuncionario(@RequestBody FuncionarioDTO dto, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem cadastrar funcionários.");
         }
 
-        unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionario::setUnidade);
+        try {
+            dto.validate();
+            Funcionario funcionario = new Funcionario();
+            funcionario.setNome(dto.getNome());
+            funcionario.setTelefone(dto.getTelefone());
+            funcionario.setEmail(dto.getEmail());
+            funcionario.setMatricula(dto.getMatricula());
+            funcionario.setCargo(dto.getCargo());
+            funcionario.setUsername(dto.getUsername());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioRepository.save(funcionario));
+            if (dto.getPassword() != null) {
+                funcionario.setPassword(PasswordUtils.hashPassword(dto.getPassword()));
+            }
+
+            unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionario::setUnidade);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioRepository.save(funcionario));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> atualizarFuncionario(@PathVariable Long id, @RequestBody UpdateFuncionarioDTO updates, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem atualizar funcionários.");
+        }
+
+        return funcionarioRepository.findById(id).map(funcionario -> {
+            if (updates.getNome() != null) funcionario.setNome(updates.getNome());
+            if (updates.getTelefone() != null) funcionario.setTelefone(updates.getTelefone());
+            if (updates.getEmail() != null) funcionario.setEmail(updates.getEmail());
+            if (updates.getMatricula() != null) funcionario.setMatricula(updates.getMatricula());
+            if (updates.getCargo() != null) funcionario.setCargo(updates.getCargo());
+            if (updates.getUsername() != null) funcionario.setUsername(updates.getUsername());
+            if (updates.getPassword() != null) funcionario.setPassword(PasswordUtils.hashPassword(updates.getPassword()));
+            if (updates.getUnidadeId() != null) {
+                unidadeRepository.findById(updates.getUnidadeId()).ifPresent(funcionario::setUnidade);
+            }
+
+            return ResponseEntity.ok(funcionarioRepository.save(funcionario));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarFuncionario(@PathVariable Long id) {
+    public ResponseEntity<?> deletarFuncionario(@PathVariable Long id, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem deletar funcionários.");
+        }
+
         if (funcionarioRepository.findById(id).isPresent()) {
             funcionarioRepository.deleteById(id);
             return ResponseEntity.noContent().build();

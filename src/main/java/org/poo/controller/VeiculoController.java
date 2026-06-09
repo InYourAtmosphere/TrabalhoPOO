@@ -1,6 +1,8 @@
 package org.poo.controller;
 
 import org.poo.model.Unidade;
+import org.poo.model.pessoa.Funcionario;
+import org.poo.model.pessoa.Cargo;
 import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +35,11 @@ public class VeiculoController {
         this.objectMapper.findAndRegisterModules();
     }
 
+    private boolean isGerente(HttpServletRequest request) {
+        Funcionario logado = (Funcionario) request.getAttribute("usuarioLogado");
+        return logado != null && logado.getCargo() == Cargo.GERENTE;
+    }
+
     @GetMapping
     public List<Veiculo> listarVeiculos() {
         return veiculoRepository.findAll();
@@ -45,7 +53,11 @@ public class VeiculoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> registrarVeiculo(@RequestParam String tipo, @RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> registrarVeiculo(@RequestParam String tipo, @RequestBody Map<String, Object> payload, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem registrar veículos.");
+        }
+
         try {
             Veiculo veiculo;
             if ("carro".equalsIgnoreCase(tipo)) {
@@ -62,7 +74,11 @@ public class VeiculoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates) {
+    public ResponseEntity<?> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem atualizar veículos.");
+        }
+
         try {
             updates.validate();
             return veiculoRepository.findById(id).map(veiculo -> {
@@ -88,7 +104,11 @@ public class VeiculoController {
     }
 
     @PatchMapping("/{id}/transferir")
-    public ResponseEntity<?> transferirVeiculo(@PathVariable Long id, @RequestBody TransferenciaVeiculoDTO dto) {
+    public ResponseEntity<?> transferirVeiculo(@PathVariable Long id, @RequestBody TransferenciaVeiculoDTO dto, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem transferir veículos.");
+        }
+
         try {
             dto.validate();
             Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
@@ -111,7 +131,11 @@ public class VeiculoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarVeiculo(@PathVariable Long id) {
+    public ResponseEntity<?> deletarVeiculo(@PathVariable Long id, HttpServletRequest request) {
+        if (!isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem deletar veículos.");
+        }
+
         if (veiculoRepository.findById(id).isPresent()) {
             veiculoRepository.deleteById(id);
             return ResponseEntity.noContent().build();
