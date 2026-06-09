@@ -1,10 +1,13 @@
 package org.poo.controller;
 
+import org.poo.model.Unidade;
 import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
 import org.poo.model.dto.request.UpdateVeiculoDTO;
+import org.poo.model.dto.request.TransferenciaVeiculoDTO;
 import org.poo.repository.VeiculoRepository;
+import org.poo.repository.UnidadeRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,16 +15,19 @@ import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/veiculos")
 public class VeiculoController {
 
     private final VeiculoRepository veiculoRepository;
+    private final UnidadeRepository unidadeRepository;
     private final ObjectMapper objectMapper;
 
     public VeiculoController() {
-        this.veiculoRepository = new VeiculoRepository();
+        this.unidadeRepository = new UnidadeRepository();
+        this.veiculoRepository = new VeiculoRepository(unidadeRepository);
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
     }
@@ -76,6 +82,29 @@ public class VeiculoController {
                 
                 return (ResponseEntity<?>) ResponseEntity.ok(veiculoRepository.save(veiculo));
             }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/transferir")
+    public ResponseEntity<?> transferirVeiculo(@PathVariable Long id, @RequestBody TransferenciaVeiculoDTO dto) {
+        try {
+            dto.validate();
+            Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
+            if (veiculoOpt.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Optional<Unidade> unidadeOpt = unidadeRepository.findById(dto.getUnidadeDestinoId());
+            if (unidadeOpt.isEmpty()) {
+                return ResponseEntity.badRequest().body("Unidade de destino não encontrada");
+            }
+
+            Veiculo veiculo = veiculoOpt.get();
+            veiculo.setUnidade(unidadeOpt.get());
+            
+            return ResponseEntity.ok(veiculoRepository.save(veiculo));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

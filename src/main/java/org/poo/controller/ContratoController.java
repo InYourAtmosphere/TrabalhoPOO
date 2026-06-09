@@ -23,8 +23,8 @@ public class ContratoController {
 
     public ContratoController() {
         this.clienteRepository = new ClienteRepository();
-        this.veiculoRepository = new VeiculoRepository();
         this.unidadeRepository = new UnidadeRepository();
+        this.veiculoRepository = new VeiculoRepository(unidadeRepository);
         this.contratoRepository = new ContratoRepository(clienteRepository, veiculoRepository, unidadeRepository);
     }
 

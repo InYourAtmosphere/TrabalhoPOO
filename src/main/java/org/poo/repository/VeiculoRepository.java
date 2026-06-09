@@ -18,6 +18,12 @@ import org.poo.model.veiculo.Veiculo;
 
 public class VeiculoRepository {
 
+    private final UnidadeRepository unidadeRepository;
+
+    public VeiculoRepository(UnidadeRepository unidadeRepository) {
+        this.unidadeRepository = unidadeRepository;
+    }
+
     
     public Veiculo save(Veiculo veiculo) {
         if (veiculo.getId() == null) {
@@ -28,7 +34,7 @@ public class VeiculoRepository {
     }
 
     private Veiculo insert(Veiculo veiculo) {
-        String sql = "INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, data_cadastro, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau, ativo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, data_cadastro, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau, ativo, unidade_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -57,6 +63,12 @@ public class VeiculoRepository {
                 stmt.setBoolean(13, moto.isTemBau());
             }
             stmt.setBoolean(14, veiculo.isAtivo());
+            
+            if (veiculo.getUnidade() != null) {
+                stmt.setLong(15, veiculo.getUnidade().getId());
+            } else {
+                stmt.setNull(15, java.sql.Types.BIGINT);
+            }
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -75,7 +87,7 @@ public class VeiculoRepository {
     }
 
     private Veiculo update(Veiculo veiculo) {
-        String sql = "UPDATE veiculos SET marca = ?, modelo = ?, ano = ?, placa = ?, chassi = ?, km_atual = ?, status = ?, qtd_portas = ?, tem_ar_condicionado = ?, cilindrada = ?, tem_bau = ?, ativo = ? WHERE id = ?";
+        String sql = "UPDATE veiculos SET marca = ?, modelo = ?, ano = ?, placa = ?, chassi = ?, km_atual = ?, status = ?, qtd_portas = ?, tem_ar_condicionado = ?, cilindrada = ?, tem_bau = ?, ativo = ?, unidade_id = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -101,7 +113,13 @@ public class VeiculoRepository {
                 stmt.setBoolean(11, moto.isTemBau());
             }
             stmt.setBoolean(12, veiculo.isAtivo());
-            stmt.setLong(13, veiculo.getId());
+            
+            if (veiculo.getUnidade() != null) {
+                stmt.setLong(13, veiculo.getUnidade().getId());
+            } else {
+                stmt.setNull(13, java.sql.Types.BIGINT);
+            }
+            stmt.setLong(14, veiculo.getId());
 
             stmt.executeUpdate();
             return veiculo;
@@ -188,6 +206,11 @@ public class VeiculoRepository {
             veiculo.setDataCadastro(dataCadastro.toLocalDateTime());
         }
         veiculo.setAtivo(rs.getBoolean("ativo"));
+
+        long unidadeId = rs.getLong("unidade_id");
+        if (!rs.wasNull()) {
+            unidadeRepository.findById(unidadeId).ifPresent(veiculo::setUnidade);
+        }
         
         return veiculo;
     }

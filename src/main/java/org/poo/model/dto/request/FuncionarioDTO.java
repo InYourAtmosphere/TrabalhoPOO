@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
+import org.poo.model.pessoa.Cargo;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,7 +16,7 @@ public class FuncionarioDTO {
     private String telefone;
     private String email;
     private String matricula;
-    private String cargo;
+    private Cargo cargo;
     private String username;
     private String password;
     private Long unidadeId;

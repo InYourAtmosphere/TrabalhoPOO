@@ -4,6 +4,7 @@ import org.poo.model.Manutencao;
 import org.poo.model.dto.request.ManutencaoDTO;
 import org.poo.repository.ManutencaoRepository;
 import org.poo.repository.VeiculoRepository;
+import org.poo.repository.UnidadeRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class ManutencaoController {
     private final VeiculoRepository veiculoRepository;
 
     public ManutencaoController() {
-        this.veiculoRepository = new VeiculoRepository();
+        this.veiculoRepository = new VeiculoRepository(new UnidadeRepository());
         this.manutencaoRepository = new ManutencaoRepository(veiculoRepository);
     }
 

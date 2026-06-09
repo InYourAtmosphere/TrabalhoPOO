@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class Funcionario extends Pessoa {
     private String matricula;
-    private String cargo;
+    private Cargo cargo;
     private String username;
     private String password;
     private Unidade unidade;

@@ -12,6 +12,7 @@ import java.util.Optional;
 
 import org.poo.config.DatabaseConfig;
 import org.poo.model.Unidade;
+import org.poo.model.pessoa.Cargo;
 import org.poo.model.pessoa.Funcionario;
 
 public class FuncionarioRepository {
@@ -43,7 +44,7 @@ public class FuncionarioRepository {
             stmt.setString(5, funcionario.getPassword());
             stmt.setTimestamp(6, Timestamp.valueOf(funcionario.getDataCadastro()));
             stmt.setString(7, funcionario.getMatricula());
-            stmt.setString(8, funcionario.getCargo());
+            stmt.setString(8, funcionario.getCargo() != null ? funcionario.getCargo().name() : null);
             
             if (funcionario.getUnidade() != null) {
                 stmt.setLong(9, funcionario.getUnidade().getId());
@@ -79,7 +80,7 @@ public class FuncionarioRepository {
             stmt.setString(4, funcionario.getUsername());
             stmt.setString(5, funcionario.getPassword());
             stmt.setString(6, funcionario.getMatricula());
-            stmt.setString(7, funcionario.getCargo());
+            stmt.setString(7, funcionario.getCargo() != null ? funcionario.getCargo().name() : null);
             
             if (funcionario.getUnidade() != null) {
                 stmt.setLong(8, funcionario.getUnidade().getId());
@@ -170,7 +171,15 @@ public class FuncionarioRepository {
         funcionario.setUsername(rs.getString("username"));
         funcionario.setPassword(rs.getString("password"));
         funcionario.setMatricula(rs.getString("matricula"));
-        funcionario.setCargo(rs.getString("cargo"));
+        
+        String cargoStr = rs.getString("cargo");
+        if (cargoStr != null) {
+            try {
+                funcionario.setCargo(Cargo.valueOf(cargoStr));
+            } catch (IllegalArgumentException e) {
+                // Se o cargo no banco não bater com o Enum, ignora ou loga
+            }
+        }
         
         Timestamp timestamp = rs.getTimestamp("data_cadastro");
         if (timestamp != null) {

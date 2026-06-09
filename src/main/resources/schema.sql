@@ -58,7 +58,9 @@ CREATE TABLE IF NOT EXISTS veiculos (
     tem_ar_condicionado BOOLEAN,
     cilindrada INTEGER,
     tem_bau BOOLEAN,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    unidade_id BIGINT,
+    CONSTRAINT fk_veiculo_unidade FOREIGN KEY (unidade_id) REFERENCES unidades(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS contratos (
@@ -98,7 +100,7 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
 );
 
 INSERT INTO funcionarios (nome, email, username, password, matricula, cargo)
-SELECT 'Administrador', 'admin@alugafacil.com', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'Gerente'
+SELECT 'Administrador', 'admin@alugafacil.com', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'GERENTE'
 WHERE NOT EXISTS (SELECT 1 FROM funcionarios);
 
 -- Senha padrão: admin123 --
