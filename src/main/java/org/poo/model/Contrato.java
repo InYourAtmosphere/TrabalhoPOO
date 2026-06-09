@@ -29,6 +29,10 @@ public class Contrato {
     private Double valorTotal;
     private StatusContrato status;
 
+    private Double kmInicial;
+    private Double kmFinal;
+    private String formaPagamento;
+
     public enum StatusContrato {
         ATIVO, FINALIZADO, CANCELADO
     }

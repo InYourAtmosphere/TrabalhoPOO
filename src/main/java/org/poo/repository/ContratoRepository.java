@@ -36,7 +36,7 @@ public class ContratoRepository {
     }
 
     private Contrato insert(Contrato contrato) {
-        String sql = "INSERT INTO contratos (cliente_id, veiculo_id, unidade_retirada_id, unidade_devolucao_id, data_inicio, data_fim_prevista, valor_diaria, valor_total, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO contratos (cliente_id, veiculo_id, unidade_retirada_id, unidade_devolucao_id, data_inicio, data_fim_prevista, valor_diaria, valor_total, status, km_inicial, km_final, forma_pagamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
@@ -53,6 +53,9 @@ public class ContratoRepository {
             stmt.setDouble(7, contrato.getValorDiaria());
             stmt.setObject(8, contrato.getValorTotal());
             stmt.setString(9, contrato.getStatus().name());
+            stmt.setObject(10, contrato.getKmInicial());
+            stmt.setObject(11, contrato.getKmFinal());
+            stmt.setString(12, contrato.getFormaPagamento());
 
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -71,7 +74,7 @@ public class ContratoRepository {
     }
 
     private Contrato update(Contrato contrato) {
-        String sql = "UPDATE contratos SET unidade_devolucao_id = ?, data_fim_real = ?, valor_total = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE contratos SET unidade_devolucao_id = ?, data_fim_real = ?, valor_total = ?, status = ?, km_inicial = ?, km_final = ?, forma_pagamento = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -89,7 +92,10 @@ public class ContratoRepository {
             
             stmt.setObject(3, contrato.getValorTotal());
             stmt.setString(4, contrato.getStatus().name());
-            stmt.setLong(5, contrato.getId());
+            stmt.setObject(5, contrato.getKmInicial());
+            stmt.setObject(6, contrato.getKmFinal());
+            stmt.setString(7, contrato.getFormaPagamento());
+            stmt.setLong(8, contrato.getId());
 
             stmt.executeUpdate();
             return contrato;
@@ -182,6 +188,10 @@ public class ContratoRepository {
         contrato.setValorDiaria(rs.getDouble("valor_diaria"));
         contrato.setValorTotal(rs.getDouble("valor_total"));
         contrato.setStatus(StatusContrato.valueOf(rs.getString("status")));
+        
+        contrato.setKmInicial(rs.getDouble("km_inicial"));
+        contrato.setKmFinal(rs.getDouble("km_final"));
+        contrato.setFormaPagamento(rs.getString("forma_pagamento"));
         
         return contrato;
     }

@@ -50,6 +50,8 @@ public class ContratoController {
             unidadeRepository.findById(dto.getUnidadeRetiradaId()).ifPresent(contrato::setUnidadeRetirada);
             contrato.setDataFimPrevista(dto.getDataFimPrevista());
             contrato.setValorDiaria(dto.getValorDiaria());
+            contrato.setKmInicial(dto.getKmInicial());
+            contrato.setFormaPagamento(dto.getFormaPagamento());
             
             return ResponseEntity.status(HttpStatus.CREATED).body(contratoRepository.save(contrato));
         } catch (IllegalArgumentException e) {

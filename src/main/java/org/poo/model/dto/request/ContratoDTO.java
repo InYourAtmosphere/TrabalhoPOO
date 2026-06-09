@@ -16,6 +16,8 @@ public class ContratoDTO {
     private Long unidadeRetiradaId;
     private LocalDateTime dataFimPrevista;
     private Double valorDiaria;
+    private Double kmInicial;
+    private String formaPagamento;
 
     public void validate() {
         if (clienteId == null) throw new IllegalArgumentException("ID do cliente é obrigatório");
