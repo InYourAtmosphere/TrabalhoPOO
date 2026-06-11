@@ -102,8 +102,51 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
     CONSTRAINT fk_token_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 
-INSERT INTO funcionarios (nome, email, username, password, matricula, cargo)
-SELECT 'Administrador', 'admin@alugafacil.com', 'admin', '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'GERENTE'
-WHERE NOT EXISTS (SELECT 1 FROM funcionarios);
+-- =============================================
+-- SEED DATA
+-- Senha padrão de todos os usuários: admin123
+-- =============================================
 
--- Senha padrão: admin123 --
+-- Unidades
+INSERT INTO unidades (nome_unidade, logradouro, numero, bairro, cidade, estado, cep) VALUES
+    ('Unidade Centro',    'Rua das Flores',      '100', 'Centro',        'São Paulo', 'SP', '01310-100'),
+    ('Unidade Norte',     'Av. Salgado Filho',   '450', 'Vila Nova',     'São Paulo', 'SP', '02110-000'),
+    ('Unidade Sul',       'Rua dos Pinheiros',   '220', 'Pinheiros',     'São Paulo', 'SP', '05422-010')
+ON CONFLICT DO NOTHING;
+
+-- Funcionários (senha: admin123)
+INSERT INTO funcionarios (nome, email, username, password, matricula, cargo, unidade_id) VALUES
+    ('Administrador', 'admin@alugafacil.com',    'admin',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'Gerente',   1),
+    ('Carlos Mendes', 'carlos@alugafacil.com',   'carlos',   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD001', 'Atendente', 1),
+    ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'Atendente', 2),
+    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'Gestor',    3)
+ON CONFLICT (username) DO NOTHING;
+
+-- Clientes
+INSERT INTO clientes (nome, telefone, email, documento_identidade, documento_habilitacao, logradouro, numero, bairro, cidade, estado, cep) VALUES
+    ('João da Silva',    '(11) 91234-5678', 'joao@email.com',    '123.456.789-00', 'CNH-SP-001', 'Rua A', '10', 'Centro',    'São Paulo', 'SP', '01001-000'),
+    ('Maria Oliveira',   '(11) 92345-6789', 'maria@email.com',   '234.567.890-11', 'CNH-SP-002', 'Rua B', '20', 'Jardins',   'São Paulo', 'SP', '01401-000'),
+    ('Pedro Alves',      '(11) 93456-7890', 'pedro@email.com',   '345.678.901-22', 'CNH-SP-003', 'Rua C', '30', 'Moema',     'São Paulo', 'SP', '04077-000'),
+    ('Lucia Ferreira',   '(11) 94567-8901', 'lucia@email.com',   '456.789.012-33', 'CNH-SP-004', 'Rua D', '40', 'Tatuapé',   'São Paulo', 'SP', '03064-000')
+ON CONFLICT DO NOTHING;
+
+-- Veículos
+INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau) VALUES
+    ('Volkswagen', 'Gol',       2021, 'ABC-1234', 'VW9BWZZZ3MT000001', 15000, 'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null),
+    ('Fiat',       'Argo',      2022, 'DEF-5678', 'ZFA19900003010002', 8000,  'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null),
+    ('Chevrolet',  'Onix',      2023, 'GHI-9012', '9BGXT48B0LG000003', 3000, 'LOCADO',        'CARRO_POPULAR', 4,    true,  null, null),
+    ('Honda',      'CG 160',    2022, 'JKL-3456', '9C2JC3110NR000004', 22000,'DISPONIVEL',    'MOTOCICLETA',   null, null,  160,  false),
+    ('Yamaha',     'Factor 150',2023, 'MNO-7890', 'LBM11J0BXPP000005', 5000, 'EM_MANUTENCAO', 'MOTOCICLETA',   null, null,  150,  true)
+ON CONFLICT (placa) DO NOTHING;
+
+-- Contratos
+INSERT INTO contratos (cliente_id, veiculo_id, unidade_retirada_id, data_inicio, data_fim_prevista, valor_diaria, status) VALUES
+    (1, 3, 1, '2026-06-01 09:00:00', '2026-06-10 09:00:00', 120.00, 'ATIVO'),
+    (2, 1, 2, '2026-05-15 10:00:00', '2026-05-20 10:00:00', 100.00, 'FINALIZADO')
+ON CONFLICT DO NOTHING;
+
+-- Manutenções
+INSERT INTO manutencoes (veiculo_id, data_inicio, data_fim, descricao, custo, tipo) VALUES
+    (5, '2026-06-05 08:00:00', null,                   'Revisão de freios e troca de óleo',  350.00, 'PREVENTIVA'),
+    (1, '2026-04-10 08:00:00', '2026-04-11 17:00:00',  'Troca de pastilha de freio',         180.00, 'CORRETIVA')
+ON CONFLICT DO NOTHING;
