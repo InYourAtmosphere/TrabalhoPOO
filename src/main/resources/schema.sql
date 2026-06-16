@@ -102,6 +102,15 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
     CONSTRAINT fk_token_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 
+-- Migração: adiciona colunas que podem faltar em bancos antigos
+ALTER TABLE funcionarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE clientes     ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE veiculos     ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE veiculos     ADD COLUMN IF NOT EXISTS unidade_id BIGINT REFERENCES unidades(id) ON DELETE SET NULL;
+ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS km_inicial DOUBLE PRECISION;
+ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS km_final DOUBLE PRECISION;
+ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS forma_pagamento VARCHAR(50);
+
 -- =============================================
 -- SEED DATA
 -- Senha padrão de todos os usuários: admin123
@@ -116,11 +125,14 @@ ON CONFLICT DO NOTHING;
 
 -- Funcionários (senha: admin123)
 INSERT INTO funcionarios (nome, email, username, password, matricula, cargo, unidade_id) VALUES
-    ('Administrador', 'admin@alugafacil.com',    'admin',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'Gerente',   1),
-    ('Carlos Mendes', 'carlos@alugafacil.com',   'carlos',   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD001', 'Atendente', 1),
-    ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'Atendente', 2),
-    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'Gestor',    3)
-ON CONFLICT (username) DO NOTHING;
+    ('Administrador', 'admin@alugafacil.com',    'admin',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'GERENTE',   1),
+    ('Carlos Mendes', 'carlos@alugafacil.com',   'carlos',   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD001', 'ATENDENTE', 1),
+    ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'ATENDENTE', 2),
+    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'GERENTE',   3)
+ON CONFLICT (username) DO UPDATE SET
+    password = EXCLUDED.password,
+    cargo = EXCLUDED.cargo,
+    unidade_id = EXCLUDED.unidade_id;
 
 -- Clientes
 INSERT INTO clientes (nome, telefone, email, documento_identidade, documento_habilitacao, logradouro, numero, bairro, cidade, estado, cep) VALUES
