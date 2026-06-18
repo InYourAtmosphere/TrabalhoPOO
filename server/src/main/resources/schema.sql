@@ -102,33 +102,22 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
     CONSTRAINT fk_token_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
 
--- Migração: adiciona colunas que podem faltar em bancos antigos
-ALTER TABLE funcionarios ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE clientes     ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE veiculos     ADD COLUMN IF NOT EXISTS ativo BOOLEAN NOT NULL DEFAULT TRUE;
-ALTER TABLE veiculos     ADD COLUMN IF NOT EXISTS unidade_id BIGINT REFERENCES unidades(id) ON DELETE SET NULL;
-ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS km_inicial DOUBLE PRECISION;
-ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS km_final DOUBLE PRECISION;
-ALTER TABLE contratos    ADD COLUMN IF NOT EXISTS forma_pagamento VARCHAR(50);
-
 -- =============================================
 -- SEED DATA
 -- Senha padrão de todos os usuários: admin123
 -- =============================================
 
--- Unidades
+-- Unidade
 INSERT INTO unidades (nome_unidade, logradouro, numero, bairro, cidade, estado, cep) VALUES
-    ('Unidade Centro',    'Rua das Flores',      '100', 'Centro',        'São Paulo', 'SP', '01310-100'),
-    ('Unidade Norte',     'Av. Salgado Filho',   '450', 'Vila Nova',     'São Paulo', 'SP', '02110-000'),
-    ('Unidade Sul',       'Rua dos Pinheiros',   '220', 'Pinheiros',     'São Paulo', 'SP', '05422-010')
+    ('Unidade Centro', 'Rua das Flores', '100', 'Centro', 'São Paulo', 'SP', '01310-100')
 ON CONFLICT DO NOTHING;
 
 -- Funcionários (senha: admin123)
 INSERT INTO funcionarios (nome, email, username, password, matricula, cargo, unidade_id) VALUES
     ('Administrador', 'admin@alugafacil.com',    'admin',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'GERENTE',   1),
     ('Carlos Mendes', 'carlos@alugafacil.com',   'carlos',   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD001', 'ATENDENTE', 1),
-    ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'ATENDENTE', 2),
-    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'GERENTE',   3)
+    ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'ATENDENTE', 1),
+    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'GERENTE',   1)
 ON CONFLICT (username) DO UPDATE SET
     password = EXCLUDED.password,
     cargo = EXCLUDED.cargo,
@@ -143,22 +132,10 @@ INSERT INTO clientes (nome, telefone, email, documento_identidade, documento_hab
 ON CONFLICT DO NOTHING;
 
 -- Veículos
-INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau) VALUES
-    ('Volkswagen', 'Gol',       2021, 'ABC-1234', 'VW9BWZZZ3MT000001', 15000, 'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null),
-    ('Fiat',       'Argo',      2022, 'DEF-5678', 'ZFA19900003010002', 8000,  'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null),
-    ('Chevrolet',  'Onix',      2023, 'GHI-9012', '9BGXT48B0LG000003', 3000, 'LOCADO',        'CARRO_POPULAR', 4,    true,  null, null),
-    ('Honda',      'CG 160',    2022, 'JKL-3456', '9C2JC3110NR000004', 22000,'DISPONIVEL',    'MOTOCICLETA',   null, null,  160,  false),
-    ('Yamaha',     'Factor 150',2023, 'MNO-7890', 'LBM11J0BXPP000005', 5000, 'EM_MANUTENCAO', 'MOTOCICLETA',   null, null,  150,  true)
+INSERT INTO veiculos (marca, modelo, ano, placa, chassi, km_atual, status, tipo_veiculo, qtd_portas, tem_ar_condicionado, cilindrada, tem_bau, unidade_id) VALUES
+    ('Volkswagen', 'Gol',       2021, 'ABC-1234', 'VW9BWZZZ3MT000001', 15000, 'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null,  1),
+    ('Fiat',       'Argo',      2022, 'DEF-5678', 'ZFA19900003010002', 8000,  'DISPONIVEL',    'CARRO_POPULAR', 4,    true,  null, null,  1),
+    ('Chevrolet',  'Onix',      2023, 'GHI-9012', '9BGXT48B0LG000003', 3000, 'LOCADO',        'CARRO_POPULAR', 4,    true,  null, null,  1),
+    ('Honda',      'CG 160',    2022, 'JKL-3456', '9C2JC3110NR000004', 22000,'DISPONIVEL',    'MOTOCICLETA',   null, null,  160,  false, 1),
+    ('Yamaha',     'Factor 150',2023, 'MNO-7890', 'LBM11J0BXPP000005', 5000, 'EM_MANUTENCAO', 'MOTOCICLETA',   null, null,  150,  true,  1)
 ON CONFLICT (placa) DO NOTHING;
-
--- Contratos
-INSERT INTO contratos (cliente_id, veiculo_id, unidade_retirada_id, data_inicio, data_fim_prevista, valor_diaria, status) VALUES
-    (1, 3, 1, '2026-06-01 09:00:00', '2026-06-10 09:00:00', 120.00, 'ATIVO'),
-    (2, 1, 2, '2026-05-15 10:00:00', '2026-05-20 10:00:00', 100.00, 'FINALIZADO')
-ON CONFLICT DO NOTHING;
-
--- Manutenções
-INSERT INTO manutencoes (veiculo_id, data_inicio, data_fim, descricao, custo, tipo) VALUES
-    (5, '2026-06-05 08:00:00', null,                   'Revisão de freios e troca de óleo',  350.00, 'PREVENTIVA'),
-    (1, '2026-04-10 08:00:00', '2026-04-11 17:00:00',  'Troca de pastilha de freio',         180.00, 'CORRETIVA')
-ON CONFLICT DO NOTHING;
