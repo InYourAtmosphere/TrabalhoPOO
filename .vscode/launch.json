@@ -3,11 +3,20 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Spring Boot (Maven)",
+            "name": "Server (Spring Boot)",
             "request": "launch",
             "mainClass": "org.poo.Main",
             "projectName": "AlugaFacil",
-            "preLaunchTask": "spring-boot:run",
+            "preLaunchTask": "server: spring-boot:run",
+            "noDebug": true
+        },
+        {
+            "type": "java",
+            "name": "Client (Swing)",
+            "request": "launch",
+            "mainClass": "org.poo.Main",
+            "projectName": "AlugaFacilClient",
+            "preLaunchTask": "client: exec:java",
             "noDebug": true
         }
     ]

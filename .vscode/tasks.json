@@ -2,13 +2,34 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "spring-boot:run",
+            "label": "server: spring-boot:run",
             "type": "shell",
             "command": "mvn spring-boot:run",
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "client: exec:java",
+            "type": "shell",
+            "command": "mvn compile exec:java",
+            "options": {
+                "cwd": "${workspaceFolder}/client"
+            },
+            "group": "build",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

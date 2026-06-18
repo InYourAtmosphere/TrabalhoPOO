@@ -10,7 +10,9 @@ import java.time.Duration;
 
 public class ApiClient {
 
-    private static final String BASE_URL = "http://localhost:8081";
+    private static final String BASE_URL = System.getProperty(
+            "alugafacil.api.url",
+            System.getenv().getOrDefault("ALUGAFACIL_API_URL", "http://localhost:8081"));
     private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
