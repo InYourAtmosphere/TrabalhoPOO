@@ -1,20 +1,27 @@
 @startuml
-' Configuração para mostrar os ícones de visibilidade (público/privado) padrão da UML
 skinparam classAttributeIconSize 0
 
 class Cliente {
-  - nome : String
-  - cpfCnpj : String
-  - cnh : String
+  - documentoIdentidade : String
+  - documentoHabilitacao : String
   - telefone : String
-  + cadastrar() : void
-  + atualizarDados() : void
 }
 
-class Categoria {
-  - nome : String
-  - valorDiaria : Float
-  + atualizarValor(novoValor: Float) : void
+class Funcionario {
+  - matricula : String
+  - cargo : Cargo
+  - username : String
+  - password : String
+}
+
+enum Cargo {
+  GERENTE
+  ATENDENTE
+}
+
+class Unidade {
+  - nomeUnidade : String
+  - endereco : Endereco
 }
 
 class Veiculo {
@@ -22,25 +29,30 @@ class Veiculo {
   - marca : String
   - modelo : String
   - ano : Integer
-  - status : String
-  + alterarStatus(novoStatus: String) : void
-  + registrarManutencao() : void
+  - status : StatusVeiculo
 }
 
-class Locacao {
-  - dataRetirada : Date
-  - dataDevolucao : Date
-  - kmInicial : Float
-  - kmFinal : Float
-  - valorTotal : Float
-  + calcularValorTotal() : Float
-  + registrarCheckOut() : void
-  + registrarCheckIn() : void
+class Contrato {
+  - dataInicio : LocalDateTime
+  - dataFimPrevista : LocalDateTime
+  - dataFimReal : LocalDateTime
+  - kmInicial : Double
+  - kmFinal : Double
+  - valorTotal : Double
 }
 
-' Relacionamentos
-Categoria "1" -- "0..*" Veiculo : possui >
-Cliente "1" -- "0..*" Locacao : realiza >
-Veiculo "1" -- "0..*" Locacao : possui histórico em >
+class Manutencao {
+  - descricao : String
+  - custo : Double
+  - tipo : TipoManutencao
+}
+
+Funcionario "0..*" -- "1" Unidade : trabalha em >
+Unidade "1" -- "0..*" Veiculo : gerencia >
+Cliente "1" -- "0..*" Contrato : realiza >
+Veiculo "1" -- "0..*" Contrato : possui histórico em >
+Veiculo "1" -- "0..*" Manutencao : submetido a >
+Funcionario --> Cargo
+Veiculo --> StatusVeiculo
 
 @enduml

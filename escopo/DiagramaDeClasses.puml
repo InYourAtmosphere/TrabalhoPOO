@@ -1,31 +1,102 @@
 @startuml
 
 class Unidade {
-  - id : long
-  - nomeFantasia : String
-  + transferirVeiculo(veiculo: Veiculo, destino: Unidade) : void
+  - id : Long
+  - nomeUnidade : String
+  - endereco : Endereco
+  - veiculos : List<Veiculo>
+  + Unidade()
+  + static builder() : Builder
+}
+
+class "Unidade.Builder" as UnidadeBuilder {
+  + nomeUnidade(String) : Builder
+  + endereco(Endereco) : Builder
+  + build() : Unidade
 }
 
 class Veiculo
 note top of Veiculo: Definido em DiagramaDeClassesVeiculos.puml
 
 class Manutencao {
-  - id : long
-  - tipo : String
-  - descricao : float
-  - dataAgendamento : LocalDateTime
+  - id : Long
+  - veiculo : Veiculo
+  - dataInicio : LocalDateTime
+  - dataFim : LocalDateTime
+  - descricao : String
+  - custo : Double
+  - tipo : TipoManutencao
+  + Manutencao()
+  + static builder() : Builder
+}
+
+enum TipoManutencao {
+  PREVENTIVA
+  CORRETIVA
+  PREDITIVA
+}
+
+class "Manutencao.Builder" as ManutencaoBuilder {
+  + veiculo(Veiculo) : Builder
+  + descricao(String) : Builder
+  + custo(Double) : Builder
+  + tipo(TipoManutencao) : Builder
+  + dataFim(LocalDateTime) : Builder
+  + build() : Manutencao
 }
 
 class Contrato {
-  - id : long
+  - id : Long
+  - cliente : Cliente
+  - veiculo : Veiculo
+  - unidadeRetirada : Unidade
+  - unidadeDevolucao : Unidade
+  - dataInicio : LocalDateTime
+  - dataFimPrevista : LocalDateTime
+  - dataFimReal : LocalDateTime
+  - valorDiaria : Double
+  - valorTotal : Double
+  - status : StatusContrato
+  - kmInicial : Double
+  - kmFinal : Double
+  - formaPagamento : String
+  + Contrato()
+  + static builder() : Builder
+}
+
+enum StatusContrato {
+  ATIVO
+  FINALIZADO
+  CANCELADO
+}
+
+class "Contrato.Builder" as ContratoBuilder {
+  + cliente(Cliente) : Builder
+  + veiculo(Veiculo) : Builder
+  + unidadeRetirada(Unidade) : Builder
+  + unidadeDevolucao(Unidade) : Builder
+  + dataFimPrevista(LocalDateTime) : Builder
+  + valorDiaria(Double) : Builder
+  + kmInicial(Double) : Builder
+  + formaPagamento(String) : Builder
+  + dataInicio(LocalDateTime) : Builder
+  + status(StatusContrato) : Builder
+  + build() : Contrato
 }
 
 class Cliente
-note top of Cliente: Definido em DiagramaDeClassesCliente.puml
+note top of Cliente: Definido em DiagramaDeClassesClientes.puml
 
 Unidade "1" -- "0..*" Veiculo : gerencia >
 Veiculo "1" -- "0..*" Manutencao : submetido a >
+Manutencao "1" -- "1" TipoManutencao
 Veiculo "1" --* "1" Contrato
 Cliente "1" --* "1" Contrato
+Contrato "1" -- "1" StatusContrato
+Unidade "0..*" -- "1" Contrato : retirada >
+Unidade "0..*" -- "0..1" Contrato : devolução >
+Unidade +-- UnidadeBuilder
+Manutencao +-- ManutencaoBuilder
+Contrato +-- ContratoBuilder
 
 @enduml

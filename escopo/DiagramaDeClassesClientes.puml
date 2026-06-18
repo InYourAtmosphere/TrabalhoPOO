@@ -1,22 +1,65 @@
 @startuml
 
-class Cliente {
-  - id: long
+abstract class Pessoa {
+  - id : Long
   - nome : String
-  - documentoIdentidade : String
-  - codHabilitacao : String
   - telefone : String
-  - criadoEm : LocalDateTime
-  - atualizadoEm : LocalDateTime
+  - email : String
+  - dataCadastro : LocalDateTime
+}
+
+class Cliente {
+  - documentoIdentidade : String
+  - documentoHabilitacao : String
+  - endereco : Endereco
+  - ativo : boolean
   + Cliente()
-  + validarDocumento(): boolean
-  + atualizarDados(UpdateClienteDTO clienteAtualizado) : void
+  + static builder() : Builder
+}
+
+class "Cliente.Builder" as ClienteBuilder {
+  + nome(String) : Builder
+  + telefone(String) : Builder
+  + email(String) : Builder
+  + documentoIdentidade(String) : Builder
+  + documentoHabilitacao(String) : Builder
+  + endereco(Endereco) : Builder
+  + ativo(boolean) : Builder
+  + build() : Cliente
+}
+
+class Endereco {
+  - logradouro : String
+  - numero : String
+  - complemento : String
+  - bairro : String
+  - cidade : String
+  - estado : String
+  - cep : String
+}
+
+class CreateClienteDTO {
+  - nome : String
+  - telefone : String
+  - email : String
+  - documentoIdentidade : String
+  - documentoHabilitacao : String
+  - endereco : Endereco
+  + validate() : void
 }
 
 class UpdateClienteDTO {
   - nome : String
   - documentoIdentidade : String
-  - codHabilitacao : String
+  - documentoHabilitacao : String
   - telefone : String
+  + validate() : void
 }
+
+Pessoa <|-- Cliente
+Cliente "1" -- "1" Endereco
+Cliente +-- ClienteBuilder
+CreateClienteDTO ..> Cliente
+UpdateClienteDTO ..> Cliente
+
 @enduml

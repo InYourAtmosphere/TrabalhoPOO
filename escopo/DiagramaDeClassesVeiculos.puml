@@ -1,26 +1,70 @@
 @startuml
 
-class Veiculo {
-  - id: long
-  - placa : String
+abstract class Veiculo {
+  - id : Long
   - marca : String
   - modelo : String
-  - ano : Year
+  - ano : Integer
+  - placa : String
   - chassi : String
+  - kmAtual : Double
   - status : StatusVeiculo
-  - kmAtual : float
-  - documentosAnexados : List<File>
-  - criadoEm : LocalDateTime
+  - unidade : Unidade
+  - dataCadastro : LocalDateTime
   - atualizadoEm : LocalDateTime
+  - ativo : boolean
   + Veiculo()
-  + atualizarStatus(novoStatus: StatusVeiculo) : void
-  + atualizarKm(kmAtual: Float) : void
 }
 
 enum StatusVeiculo {
   DISPONIVEL
-  INDISPONIVEL
-  EM_USO
-  MANUTENCAO
+  LOCADO
+  EM_MANUTENCAO
+  DESATIVADO
 }
+
+class CarroPopular {
+  - quantidadePortas : int
+  - temArCondicionado : boolean
+  + static builder() : Builder
+}
+
+class "CarroPopular.Builder" as CarroPopularBuilder {
+  + marca(String) : Builder
+  + modelo(String) : Builder
+  + ano(Integer) : Builder
+  + placa(String) : Builder
+  + chassi(String) : Builder
+  + kmAtual(Double) : Builder
+  + unidade(Unidade) : Builder
+  + quantidadePortas(int) : Builder
+  + temArCondicionado(boolean) : Builder
+  + build() : CarroPopular
+}
+
+class Motocicleta {
+  - cilindrada : int
+  - temBau : boolean
+  + static builder() : Builder
+}
+
+class "Motocicleta.Builder" as MotocicletaBuilder {
+  + marca(String) : Builder
+  + modelo(String) : Builder
+  + ano(Integer) : Builder
+  + placa(String) : Builder
+  + chassi(String) : Builder
+  + kmAtual(Double) : Builder
+  + unidade(Unidade) : Builder
+  + cilindrada(int) : Builder
+  + temBau(boolean) : Builder
+  + build() : Motocicleta
+}
+
+Veiculo <|-- CarroPopular
+Veiculo <|-- Motocicleta
+Veiculo "1" -- "1" StatusVeiculo
+CarroPopular +-- CarroPopularBuilder
+Motocicleta +-- MotocicletaBuilder
+
 @enduml
