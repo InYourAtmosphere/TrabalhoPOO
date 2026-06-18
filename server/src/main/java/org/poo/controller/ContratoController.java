@@ -21,11 +21,12 @@ public class ContratoController {
     private final VeiculoRepository veiculoRepository;
     private final UnidadeRepository unidadeRepository;
 
-    public ContratoController() {
-        this.clienteRepository = new ClienteRepository();
-        this.unidadeRepository = new UnidadeRepository();
-        this.veiculoRepository = new VeiculoRepository(unidadeRepository);
-        this.contratoRepository = new ContratoRepository(clienteRepository, veiculoRepository, unidadeRepository);
+    public ContratoController(ContratoRepository contratoRepository, ClienteRepository clienteRepository,
+                               VeiculoRepository veiculoRepository, UnidadeRepository unidadeRepository) {
+        this.contratoRepository = contratoRepository;
+        this.clienteRepository = clienteRepository;
+        this.veiculoRepository = veiculoRepository;
+        this.unidadeRepository = unidadeRepository;
     }
 
     @GetMapping

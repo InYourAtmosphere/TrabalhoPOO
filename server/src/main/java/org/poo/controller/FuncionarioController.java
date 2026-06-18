@@ -1,11 +1,11 @@
 package org.poo.controller;
 
 import org.poo.model.pessoa.Funcionario;
-import org.poo.model.pessoa.Cargo;
 import org.poo.model.dto.request.FuncionarioDTO;
 import org.poo.model.dto.request.UpdateFuncionarioDTO;
 import org.poo.repository.FuncionarioRepository;
 import org.poo.repository.UnidadeRepository;
+import org.poo.util.AuthorizationUtils;
 import org.poo.util.PasswordUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,14 +21,9 @@ public class FuncionarioController {
     private final FuncionarioRepository funcionarioRepository;
     private final UnidadeRepository unidadeRepository;
 
-    public FuncionarioController() {
-        this.unidadeRepository = new UnidadeRepository();
-        this.funcionarioRepository = new FuncionarioRepository(unidadeRepository);
-    }
-
-    private boolean isGerente(HttpServletRequest request) {
-        Funcionario logado = (Funcionario) request.getAttribute("usuarioLogado");
-        return logado != null && logado.getCargo() == Cargo.GERENTE;
+    public FuncionarioController(FuncionarioRepository funcionarioRepository, UnidadeRepository unidadeRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+        this.unidadeRepository = unidadeRepository;
     }
 
     @GetMapping
@@ -45,7 +40,7 @@ public class FuncionarioController {
 
     @PostMapping
     public ResponseEntity<?> cadastrarFuncionario(@RequestBody FuncionarioDTO dto, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem cadastrar funcionários.");
         }
 
@@ -73,7 +68,7 @@ public class FuncionarioController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> atualizarFuncionario(@PathVariable Long id, @RequestBody UpdateFuncionarioDTO updates, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem atualizar funcionários.");
         }
 
@@ -95,7 +90,7 @@ public class FuncionarioController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarFuncionario(@PathVariable Long id, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem deletar funcionários.");
         }
 

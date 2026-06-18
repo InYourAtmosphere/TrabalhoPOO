@@ -1,8 +1,6 @@
 package org.poo.controller;
 
 import org.poo.model.Unidade;
-import org.poo.model.pessoa.Funcionario;
-import org.poo.model.pessoa.Cargo;
 import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
@@ -10,6 +8,7 @@ import org.poo.model.dto.request.UpdateVeiculoDTO;
 import org.poo.model.dto.request.TransferenciaVeiculoDTO;
 import org.poo.repository.VeiculoRepository;
 import org.poo.repository.UnidadeRepository;
+import org.poo.util.AuthorizationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +27,11 @@ public class VeiculoController {
     private final UnidadeRepository unidadeRepository;
     private final ObjectMapper objectMapper;
 
-    public VeiculoController() {
-        this.unidadeRepository = new UnidadeRepository();
-        this.veiculoRepository = new VeiculoRepository(unidadeRepository);
+    public VeiculoController(VeiculoRepository veiculoRepository, UnidadeRepository unidadeRepository) {
+        this.veiculoRepository = veiculoRepository;
+        this.unidadeRepository = unidadeRepository;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules();
-    }
-
-    private boolean isGerente(HttpServletRequest request) {
-        Funcionario logado = (Funcionario) request.getAttribute("usuarioLogado");
-        return logado != null && logado.getCargo() == Cargo.GERENTE;
     }
 
     @GetMapping
@@ -54,7 +48,7 @@ public class VeiculoController {
 
     @PostMapping
     public ResponseEntity<?> registrarVeiculo(@RequestParam String tipo, @RequestBody Map<String, Object> payload, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem registrar veículos.");
         }
 
@@ -75,7 +69,7 @@ public class VeiculoController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem atualizar veículos.");
         }
 
@@ -105,7 +99,7 @@ public class VeiculoController {
 
     @PatchMapping("/{id}/transferir")
     public ResponseEntity<?> transferirVeiculo(@PathVariable Long id, @RequestBody TransferenciaVeiculoDTO dto, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem transferir veículos.");
         }
 
@@ -132,7 +126,7 @@ public class VeiculoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarVeiculo(@PathVariable Long id, HttpServletRequest request) {
-        if (!isGerente(request)) {
+        if (!AuthorizationUtils.isGerente(request)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem deletar veículos.");
         }
 

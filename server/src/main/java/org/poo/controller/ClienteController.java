@@ -16,8 +16,8 @@ public class ClienteController {
 
     private final ClienteRepository clienteRepository;
 
-    public ClienteController() {
-        this.clienteRepository = new ClienteRepository();
+    public ClienteController(ClienteRepository clienteRepository) {
+        this.clienteRepository = clienteRepository;
     }
 
     @GetMapping

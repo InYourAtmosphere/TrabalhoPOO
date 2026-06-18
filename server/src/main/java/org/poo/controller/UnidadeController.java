@@ -15,8 +15,8 @@ public class UnidadeController {
 
     private final UnidadeRepository unidadeRepository;
 
-    public UnidadeController() {
-        this.unidadeRepository = new UnidadeRepository();
+    public UnidadeController(UnidadeRepository unidadeRepository) {
+        this.unidadeRepository = unidadeRepository;
     }
 
     @GetMapping

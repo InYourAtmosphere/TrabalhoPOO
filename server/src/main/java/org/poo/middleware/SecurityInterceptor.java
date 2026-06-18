@@ -1,8 +1,6 @@
 package org.poo.middleware;
 
 import org.poo.repository.AuthenticationTokenRepository;
-import org.poo.repository.FuncionarioRepository;
-import org.poo.repository.UnidadeRepository;
 import org.poo.model.AuthenticationToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,8 +15,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private final AuthenticationTokenRepository tokenRepository;
 
-    public SecurityInterceptor() {
-        this.tokenRepository = new AuthenticationTokenRepository(new FuncionarioRepository(new UnidadeRepository()));
+    public SecurityInterceptor(AuthenticationTokenRepository tokenRepository) {
+        this.tokenRepository = tokenRepository;
     }
 
     @Override

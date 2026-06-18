@@ -5,7 +5,6 @@ import org.poo.model.pessoa.Funcionario;
 import org.poo.model.dto.request.LoginDTO;
 import org.poo.repository.AuthenticationTokenRepository;
 import org.poo.repository.FuncionarioRepository;
-import org.poo.repository.UnidadeRepository;
 import org.poo.util.PasswordUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +18,9 @@ public class AuthController {
     private final FuncionarioRepository funcionarioRepository;
     private final AuthenticationTokenRepository tokenRepository;
 
-    public AuthController() {
-        UnidadeRepository unidadeRepository = new UnidadeRepository();
-        this.funcionarioRepository = new FuncionarioRepository(unidadeRepository);
-        this.tokenRepository = new AuthenticationTokenRepository(funcionarioRepository);
+    public AuthController(FuncionarioRepository funcionarioRepository, AuthenticationTokenRepository tokenRepository) {
+        this.funcionarioRepository = funcionarioRepository;
+        this.tokenRepository = tokenRepository;
     }
 
     @PostMapping("/login")
