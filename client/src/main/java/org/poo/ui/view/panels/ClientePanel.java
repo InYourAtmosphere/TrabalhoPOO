@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.NovoClienteDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +23,9 @@ public class ClientePanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
+        JButton btnNovoCliente = new JButton("Novo Cliente");
         toolbar.add(btnAtualizar);
+        toolbar.add(btnNovoCliente);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Nome", "Email", "Telefone", "Documento"};
@@ -35,6 +38,8 @@ public class ClientePanel extends JPanel {
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnNovoCliente.addActionListener(e ->
+                new NovoClienteDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         carregarDados();
     }
 

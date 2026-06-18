@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.NovoVeiculoDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +23,9 @@ public class VeiculoPanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
+        JButton btnNovoVeiculo = new JButton("Novo Veículo");
         toolbar.add(btnAtualizar);
+        toolbar.add(btnNovoVeiculo);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo"};
@@ -35,6 +38,8 @@ public class VeiculoPanel extends JPanel {
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnNovoVeiculo.addActionListener(e ->
+                new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         carregarDados();
     }
 
