@@ -30,4 +30,32 @@ public class Manutencao {
     public Manutencao() {
         this.dataInicio = LocalDateTime.now();
     }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Veiculo veiculo;
+        private String descricao;
+        private Double custo;
+        private TipoManutencao tipo;
+        private LocalDateTime dataFim;
+
+        public Builder veiculo(Veiculo veiculo) { this.veiculo = veiculo; return this; }
+        public Builder descricao(String descricao) { this.descricao = descricao; return this; }
+        public Builder custo(Double custo) { this.custo = custo; return this; }
+        public Builder tipo(TipoManutencao tipo) { this.tipo = tipo; return this; }
+        public Builder dataFim(LocalDateTime dataFim) { this.dataFim = dataFim; return this; }
+
+        public Manutencao build() {
+            Manutencao manutencao = new Manutencao();
+            manutencao.setVeiculo(veiculo);
+            manutencao.setDescricao(descricao);
+            manutencao.setCusto(custo);
+            manutencao.setTipo(tipo);
+            manutencao.setDataFim(dataFim);
+            return manutencao;
+        }
+    }
 }

@@ -38,12 +38,15 @@ public class ManutencaoController {
     public ResponseEntity<?> registrarManutencao(@RequestBody ManutencaoDTO dto) {
         try {
             dto.validate();
-            Manutencao manutencao = new Manutencao();
-            veiculoRepository.findById(dto.getVeiculoId()).ifPresent(manutencao::setVeiculo);
-            manutencao.setDescricao(dto.getDescricao());
-            manutencao.setCusto(dto.getCusto());
-            manutencao.setTipo(dto.getTipo());
-            
+            Manutencao.Builder manutencaoBuilder = Manutencao.builder()
+                    .descricao(dto.getDescricao())
+                    .custo(dto.getCusto())
+                    .tipo(dto.getTipo());
+
+            veiculoRepository.findById(dto.getVeiculoId()).ifPresent(manutencaoBuilder::veiculo);
+
+            Manutencao manutencao = manutencaoBuilder.build();
+
             return ResponseEntity.status(HttpStatus.CREATED).body(manutencaoRepository.save(manutencao));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

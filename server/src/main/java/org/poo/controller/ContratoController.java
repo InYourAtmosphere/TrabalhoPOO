@@ -45,15 +45,18 @@ public class ContratoController {
     public ResponseEntity<?> registrarContrato(@RequestBody ContratoDTO dto) {
         try {
             dto.validate();
-            Contrato contrato = new Contrato();
-            clienteRepository.findById(dto.getClienteId()).ifPresent(contrato::setCliente);
-            veiculoRepository.findById(dto.getVeiculoId()).ifPresent(contrato::setVeiculo);
-            unidadeRepository.findById(dto.getUnidadeRetiradaId()).ifPresent(contrato::setUnidadeRetirada);
-            contrato.setDataFimPrevista(dto.getDataFimPrevista());
-            contrato.setValorDiaria(dto.getValorDiaria());
-            contrato.setKmInicial(dto.getKmInicial());
-            contrato.setFormaPagamento(dto.getFormaPagamento());
-            
+            Contrato.Builder contratoBuilder = Contrato.builder()
+                    .dataFimPrevista(dto.getDataFimPrevista())
+                    .valorDiaria(dto.getValorDiaria())
+                    .kmInicial(dto.getKmInicial())
+                    .formaPagamento(dto.getFormaPagamento());
+
+            clienteRepository.findById(dto.getClienteId()).ifPresent(contratoBuilder::cliente);
+            veiculoRepository.findById(dto.getVeiculoId()).ifPresent(contratoBuilder::veiculo);
+            unidadeRepository.findById(dto.getUnidadeRetiradaId()).ifPresent(contratoBuilder::unidadeRetirada);
+
+            Contrato contrato = contratoBuilder.build();
+
             return ResponseEntity.status(HttpStatus.CREATED).body(contratoRepository.save(contrato));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

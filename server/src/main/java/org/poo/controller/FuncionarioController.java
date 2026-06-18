@@ -46,19 +46,21 @@ public class FuncionarioController {
 
         try {
             dto.validate();
-            Funcionario funcionario = new Funcionario();
-            funcionario.setNome(dto.getNome());
-            funcionario.setTelefone(dto.getTelefone());
-            funcionario.setEmail(dto.getEmail());
-            funcionario.setMatricula(dto.getMatricula());
-            funcionario.setCargo(dto.getCargo());
-            funcionario.setUsername(dto.getUsername());
+            Funcionario.Builder funcionarioBuilder = Funcionario.builder()
+                    .nome(dto.getNome())
+                    .telefone(dto.getTelefone())
+                    .email(dto.getEmail())
+                    .matricula(dto.getMatricula())
+                    .cargo(dto.getCargo())
+                    .username(dto.getUsername());
 
             if (dto.getPassword() != null) {
-                funcionario.setPassword(PasswordUtils.hashPassword(dto.getPassword()));
+                funcionarioBuilder.password(PasswordUtils.hashPassword(dto.getPassword()));
             }
 
-            unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionario::setUnidade);
+            unidadeRepository.findById(dto.getUnidadeId()).ifPresent(funcionarioBuilder::unidade);
+
+            Funcionario funcionario = funcionarioBuilder.build();
 
             return ResponseEntity.status(HttpStatus.CREATED).body(funcionarioRepository.save(funcionario));
         } catch (IllegalArgumentException e) {

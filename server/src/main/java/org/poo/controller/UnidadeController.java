@@ -35,9 +35,10 @@ public class UnidadeController {
     public ResponseEntity<?> cadastrarUnidade(@RequestBody UnidadeDTO dto) {
         try {
             dto.validate();
-            Unidade unidade = new Unidade();
-            unidade.setNomeUnidade(dto.getNomeUnidade());
-            unidade.setEndereco(dto.getEndereco());
+            Unidade unidade = Unidade.builder()
+                    .nomeUnidade(dto.getNomeUnidade())
+                    .endereco(dto.getEndereco())
+                    .build();
             return ResponseEntity.status(HttpStatus.CREATED).body(unidadeRepository.save(unidade));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

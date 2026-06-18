@@ -36,14 +36,15 @@ public class ClienteController {
     public ResponseEntity<?> cadastrarCliente(@RequestBody CreateClienteDTO dto) {
         try {
             dto.validate();
-            Cliente cliente = new Cliente();
-            cliente.setNome(dto.getNome());
-            cliente.setTelefone(dto.getTelefone());
-            cliente.setEmail(dto.getEmail());
-            cliente.setDocumentoIdentidade(dto.getDocumentoIdentidade());
-            cliente.setDocumentoHabilitacao(dto.getDocumentoHabilitacao());
-            cliente.setEndereco(dto.getEndereco());
-            
+            Cliente cliente = Cliente.builder()
+                    .nome(dto.getNome())
+                    .telefone(dto.getTelefone())
+                    .email(dto.getEmail())
+                    .documentoIdentidade(dto.getDocumentoIdentidade())
+                    .documentoHabilitacao(dto.getDocumentoHabilitacao())
+                    .endereco(dto.getEndereco())
+                    .build();
+
             return ResponseEntity.status(HttpStatus.CREATED).body(clienteRepository.save(cliente));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
