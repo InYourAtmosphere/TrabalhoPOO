@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.EditarClienteDialog;
 import org.poo.ui.view.dialogs.NovoClienteDialog;
 
 import javax.swing.*;
@@ -15,6 +16,8 @@ public class ClientePanel extends JPanel {
 
     private final DefaultTableModel tableModel;
     private final JTable tabela;
+    private final JButton btnEditar = new JButton("Editar");
+    private final JButton btnExcluir = new JButton("Excluir");
 
     public ClientePanel() {
         super(new BorderLayout(5, 5));
@@ -24,8 +27,13 @@ public class ClientePanel extends JPanel {
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovoCliente = new JButton("Novo Cliente");
+        btnEditar.setEnabled(false);
+        btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
         toolbar.add(btnNovoCliente);
+        toolbar.addSeparator();
+        toolbar.add(btnEditar);
+        toolbar.add(btnExcluir);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Nome", "Email", "Telefone", "Documento"};
@@ -37,10 +45,67 @@ public class ClientePanel extends JPanel {
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
+        tabela.getSelectionModel().addListSelectionListener(e -> {
+            boolean selecionado = tabela.getSelectedRow() >= 0;
+            btnEditar.setEnabled(selecionado);
+            btnExcluir.setEnabled(selecionado);
+        });
+
         btnAtualizar.addActionListener(e -> carregarDados());
         btnNovoCliente.addActionListener(e ->
                 new NovoClienteDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        btnEditar.addActionListener(e -> abrirEdicao());
+        btnExcluir.addActionListener(e -> excluirSelecionado());
         carregarDados();
+    }
+
+    private long idSelecionado() {
+        int row = tabela.getSelectedRow();
+        return (long) tableModel.getValueAt(row, 0);
+    }
+
+    private void abrirEdicao() {
+        new EditarClienteDialog(SwingUtilities.getWindowAncestor(this), idSelecionado(), this::carregarDados)
+                .setVisible(true);
+    }
+
+    private void excluirSelecionado() {
+        int row = tabela.getSelectedRow();
+        String nome = (String) tableModel.getValueAt(row, 1);
+        int confirmacao = JOptionPane.showConfirmDialog(
+                this,
+                "Excluir o cliente \"" + nome + "\"?",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (confirmacao != JOptionPane.YES_OPTION) return;
+
+        long id = idSelecionado();
+        new SwingWorker<ApiClient.ApiResponse, Void>() {
+            @Override
+            protected ApiClient.ApiResponse doInBackground() throws Exception {
+                return ApiClient.delete("/clientes/" + id);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ApiClient.ApiResponse resposta = get();
+                    if (resposta.isSuccess()) {
+                        carregarDados();
+                    } else {
+                        JOptionPane.showMessageDialog(ClientePanel.this,
+                                "Erro ao excluir: " + resposta.body(),
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(ClientePanel.this,
+                            "Erro de conexão com o servidor.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     private void carregarDados() {

@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.NovoContratoDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +23,9 @@ public class ContratoPanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
+        JButton btnNovoContrato = new JButton("Novo Contrato");
         toolbar.add(btnAtualizar);
+        toolbar.add(btnNovoContrato);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Cliente", "Veículo", "Unidade Retirada", "Data Início", "Data Fim", "Valor Diária", "Status"};
@@ -35,6 +38,8 @@ public class ContratoPanel extends JPanel {
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnNovoContrato.addActionListener(e ->
+                new NovoContratoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         carregarDados();
     }
 

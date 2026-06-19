@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.NovaUnidadeDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,6 +15,7 @@ public class UnidadePanel extends JPanel {
 
     private final DefaultTableModel tableModel;
     private final JTable tabela;
+    private final JButton btnExcluir = new JButton("Excluir");
 
     public UnidadePanel() {
         super(new BorderLayout(5, 5));
@@ -22,7 +24,12 @@ public class UnidadePanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
+        JButton btnNovaUnidade = new JButton("Nova Unidade");
+        btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
+        toolbar.add(btnNovaUnidade);
+        toolbar.addSeparator();
+        toolbar.add(btnExcluir);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Nome", "Cidade", "Estado", "CEP"};
@@ -34,8 +41,53 @@ public class UnidadePanel extends JPanel {
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
+        tabela.getSelectionModel().addListSelectionListener(e ->
+                btnExcluir.setEnabled(tabela.getSelectedRow() >= 0));
+
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnNovaUnidade.addActionListener(e ->
+                new NovaUnidadeDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        btnExcluir.addActionListener(e -> excluirSelecionado());
         carregarDados();
+    }
+
+    private void excluirSelecionado() {
+        int row = tabela.getSelectedRow();
+        String nome = (String) tableModel.getValueAt(row, 1);
+        int confirmacao = JOptionPane.showConfirmDialog(
+                this,
+                "Excluir a unidade \"" + nome + "\"?\nVeículos e funcionários vinculados perderão o vínculo.",
+                "Confirmar exclusão",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (confirmacao != JOptionPane.YES_OPTION) return;
+
+        long id = (long) tableModel.getValueAt(row, 0);
+        new SwingWorker<ApiClient.ApiResponse, Void>() {
+            @Override
+            protected ApiClient.ApiResponse doInBackground() throws Exception {
+                return ApiClient.delete("/unidades/" + id);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ApiClient.ApiResponse resposta = get();
+                    if (resposta.isSuccess()) {
+                        carregarDados();
+                    } else {
+                        JOptionPane.showMessageDialog(UnidadePanel.this,
+                                "Erro ao excluir: " + resposta.body(),
+                                "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(UnidadePanel.this,
+                            "Erro de conexão com o servidor.",
+                            "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }.execute();
     }
 
     private void carregarDados() {
