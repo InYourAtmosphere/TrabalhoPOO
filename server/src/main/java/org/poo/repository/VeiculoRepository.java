@@ -164,11 +164,23 @@ public class VeiculoRepository {
     }
 
     
+    public void updateStatus(Long id, StatusVeiculo status) {
+        String sql = "UPDATE veiculos SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status.name());
+            stmt.setLong(2, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao atualizar status do veículo", e);
+        }
+    }
+
     public void deleteById(Long id) {
         String sql = "UPDATE veiculos SET ativo = FALSE WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {

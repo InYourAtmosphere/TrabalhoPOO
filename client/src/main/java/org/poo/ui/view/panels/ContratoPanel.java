@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.view.dialogs.EncerrarContratoDialog;
 import org.poo.ui.view.dialogs.NovoContratoDialog;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ public class ContratoPanel extends JPanel {
 
     private final DefaultTableModel tableModel;
     private final JTable tabela;
+    private final JButton btnEncerrar = new JButton("Encerrar Contrato");
 
     public ContratoPanel() {
         super(new BorderLayout(5, 5));
@@ -24,8 +26,11 @@ public class ContratoPanel extends JPanel {
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovoContrato = new JButton("Novo Contrato");
+        btnEncerrar.setEnabled(false);
         toolbar.add(btnAtualizar);
         toolbar.add(btnNovoContrato);
+        toolbar.addSeparator();
+        toolbar.add(btnEncerrar);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Cliente", "Veículo", "Unidade Retirada", "Data Início", "Data Fim", "Valor Diária", "Status"};
@@ -37,9 +42,19 @@ public class ContratoPanel extends JPanel {
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
+        tabela.getSelectionModel().addListSelectionListener(e -> {
+            int row = tabela.getSelectedRow();
+            boolean ativo = row >= 0 && "ATIVO".equals(tableModel.getValueAt(row, 7));
+            btnEncerrar.setEnabled(ativo);
+        });
+
         btnAtualizar.addActionListener(e -> carregarDados());
         btnNovoContrato.addActionListener(e ->
                 new NovoContratoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        btnEncerrar.addActionListener(e -> {
+            long id = (long) tableModel.getValueAt(tabela.getSelectedRow(), 0);
+            new EncerrarContratoDialog(SwingUtilities.getWindowAncestor(this), id, this::carregarDados).setVisible(true);
+        });
         carregarDados();
     }
 

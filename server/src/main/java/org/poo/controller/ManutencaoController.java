@@ -2,6 +2,7 @@ package org.poo.controller;
 
 import org.poo.model.Manutencao;
 import org.poo.model.dto.request.ManutencaoDTO;
+import org.poo.model.veiculo.StatusVeiculo;
 import org.poo.repository.ManutencaoRepository;
 import org.poo.repository.VeiculoRepository;
 import org.springframework.http.HttpStatus;
@@ -46,8 +47,12 @@ public class ManutencaoController {
             veiculoRepository.findById(dto.getVeiculoId()).ifPresent(manutencaoBuilder::veiculo);
 
             Manutencao manutencao = manutencaoBuilder.build();
+            Manutencao salva = manutencaoRepository.save(manutencao);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(manutencaoRepository.save(manutencao));
+            veiculoRepository.findById(dto.getVeiculoId())
+                    .ifPresent(v -> veiculoRepository.updateStatus(v.getId(), StatusVeiculo.EM_MANUTENCAO));
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(salva);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
