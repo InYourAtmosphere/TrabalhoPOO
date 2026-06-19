@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.NovaManutencaoDialog;
 
 import javax.swing.*;
@@ -23,9 +24,13 @@ public class ManutencaoPanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
-        JButton btnNovaManutencao = new JButton("Registrar Manutenção");
         toolbar.add(btnAtualizar);
-        toolbar.add(btnNovaManutencao);
+        if (SessionContext.getInstance().isGerente()) {
+            JButton btnNovaManutencao = new JButton("Registrar Manutenção");
+            toolbar.add(btnNovaManutencao);
+            btnNovaManutencao.addActionListener(e ->
+                    new NovaManutencaoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        }
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Veículo", "Tipo", "Descrição", "Data Início", "Custo"};
@@ -38,8 +43,6 @@ public class ManutencaoPanel extends JPanel {
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());
-        btnNovaManutencao.addActionListener(e ->
-                new NovaManutencaoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         carregarDados();
     }
 

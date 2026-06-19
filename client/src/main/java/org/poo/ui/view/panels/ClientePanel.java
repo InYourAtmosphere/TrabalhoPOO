@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.EditarClienteDialog;
 import org.poo.ui.view.dialogs.NovoClienteDialog;
 
@@ -27,13 +28,17 @@ public class ClientePanel extends JPanel {
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovoCliente = new JButton("Novo Cliente");
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
         toolbar.add(btnNovoCliente);
-        toolbar.addSeparator();
-        toolbar.add(btnEditar);
-        toolbar.add(btnExcluir);
+
+        boolean gerente = SessionContext.getInstance().isGerente();
+        if (gerente) {
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+            toolbar.addSeparator();
+            toolbar.add(btnEditar);
+            toolbar.add(btnExcluir);
+        }
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Nome", "Email", "Telefone", "Documento"};
@@ -45,17 +50,19 @@ public class ClientePanel extends JPanel {
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        tabela.getSelectionModel().addListSelectionListener(e -> {
-            boolean selecionado = tabela.getSelectedRow() >= 0;
-            btnEditar.setEnabled(selecionado);
-            btnExcluir.setEnabled(selecionado);
-        });
+        if (gerente) {
+            tabela.getSelectionModel().addListSelectionListener(e -> {
+                boolean selecionado = tabela.getSelectedRow() >= 0;
+                btnEditar.setEnabled(selecionado);
+                btnExcluir.setEnabled(selecionado);
+            });
+            btnEditar.addActionListener(e -> abrirEdicao());
+            btnExcluir.addActionListener(e -> excluirSelecionado());
+        }
 
         btnAtualizar.addActionListener(e -> carregarDados());
         btnNovoCliente.addActionListener(e ->
                 new NovoClienteDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
-        btnEditar.addActionListener(e -> abrirEdicao());
-        btnExcluir.addActionListener(e -> excluirSelecionado());
         carregarDados();
     }
 

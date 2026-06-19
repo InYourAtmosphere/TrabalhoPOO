@@ -1,5 +1,6 @@
 package org.poo.ui.view;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.model.dto.request.LoginDTO;
 import org.poo.ui.ApiClient;
@@ -90,10 +91,10 @@ public class LoginFrame extends JFrame {
                 ApiClient.ApiResponse response = ApiClient.post("/auth/login", body);
 
                 if (response.isSuccess()) {
-                    String responseBody = response.body();
-                    SessionContext.getInstance().setToken(extrairCampo(responseBody, "token"));
-                    SessionContext.getInstance().setCargo(extrairCampo(responseBody, "cargo"));
-                    SessionContext.getInstance().setNomeUsuario(extrairCampo(responseBody, "nome"));
+                    JsonNode json = new ObjectMapper().readTree(response.body());
+                    SessionContext.getInstance().setToken(json.path("token").asText());
+                    SessionContext.getInstance().setCargo(json.path("cargo").asText());
+                    SessionContext.getInstance().setNomeUsuario(json.path("nome").asText());
                     return true;
                 } else {
                     mensagemErro = "Usuário ou senha inválidos.";
@@ -119,12 +120,4 @@ public class LoginFrame extends JFrame {
         }.execute();
     }
 
-    private String extrairCampo(String json, String campo) {
-        String chave = "\"" + campo + "\":\"";
-        int inicio = json.indexOf(chave);
-        if (inicio == -1) return "";
-        inicio += chave.length();
-        int fim = json.indexOf("\"", inicio);
-        return fim == -1 ? "" : json.substring(inicio, fim);
-    }
 }
