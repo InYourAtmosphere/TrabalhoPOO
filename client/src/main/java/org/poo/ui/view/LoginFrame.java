@@ -90,10 +90,10 @@ public class LoginFrame extends JFrame {
                 ApiClient.ApiResponse response = ApiClient.post("/auth/login", body);
 
                 if (response.isSuccess()) {
-                    // Extrai o token do JSON da resposta
-                    String token = extrairToken(response.body());
-                    SessionContext.getInstance().setToken(token);
-                    SessionContext.getInstance().setNomeUsuario(username);
+                    String responseBody = response.body();
+                    SessionContext.getInstance().setToken(extrairCampo(responseBody, "token"));
+                    SessionContext.getInstance().setCargo(extrairCampo(responseBody, "cargo"));
+                    SessionContext.getInstance().setNomeUsuario(extrairCampo(responseBody, "nome"));
                     return true;
                 } else {
                     mensagemErro = "Usuário ou senha inválidos.";
@@ -117,11 +117,6 @@ public class LoginFrame extends JFrame {
                 }
             }
         }.execute();
-    }
-
-    // Extração simples sem biblioteca extra — o JSON de resposta contém {"token":"<uuid>",...}
-    private String extrairToken(String json) {
-        return extrairCampo(json, "token");
     }
 
     private String extrairCampo(String json, String campo) {

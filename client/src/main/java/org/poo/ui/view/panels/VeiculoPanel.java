@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.EditarVeiculoDialog;
 import org.poo.ui.view.dialogs.NovoVeiculoDialog;
 
@@ -26,14 +27,21 @@ public class VeiculoPanel extends JPanel {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         JButton btnAtualizar = new JButton("Atualizar");
-        JButton btnNovoVeiculo = new JButton("Novo Veículo");
-        btnEditar.setEnabled(false);
-        btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
-        toolbar.add(btnNovoVeiculo);
-        toolbar.addSeparator();
-        toolbar.add(btnEditar);
-        toolbar.add(btnExcluir);
+
+        boolean gerente = SessionContext.getInstance().isGerente();
+        if (gerente) {
+            JButton btnNovoVeiculo = new JButton("Novo Veículo");
+            btnEditar.setEnabled(false);
+            btnExcluir.setEnabled(false);
+            toolbar.add(btnNovoVeiculo);
+            toolbar.addSeparator();
+            toolbar.add(btnEditar);
+            toolbar.add(btnExcluir);
+            btnNovoVeiculo.addActionListener(e ->
+                    new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        }
+
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo"};
@@ -45,17 +53,17 @@ public class VeiculoPanel extends JPanel {
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        tabela.getSelectionModel().addListSelectionListener(e -> {
-            boolean selecionado = tabela.getSelectedRow() >= 0;
-            btnEditar.setEnabled(selecionado);
-            btnExcluir.setEnabled(selecionado);
-        });
+        if (gerente) {
+            tabela.getSelectionModel().addListSelectionListener(e -> {
+                boolean selecionado = tabela.getSelectedRow() >= 0;
+                btnEditar.setEnabled(selecionado);
+                btnExcluir.setEnabled(selecionado);
+            });
+            btnEditar.addActionListener(e -> abrirEdicao());
+            btnExcluir.addActionListener(e -> excluirSelecionado());
+        }
 
         btnAtualizar.addActionListener(e -> carregarDados());
-        btnNovoVeiculo.addActionListener(e ->
-                new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
-        btnEditar.addActionListener(e -> abrirEdicao());
-        btnExcluir.addActionListener(e -> excluirSelecionado());
         carregarDados();
     }
 

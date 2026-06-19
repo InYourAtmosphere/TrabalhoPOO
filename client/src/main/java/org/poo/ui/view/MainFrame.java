@@ -44,7 +44,8 @@ public class MainFrame extends JFrame {
         cabecalho.add(titulo, BorderLayout.WEST);
 
         String usuario = SessionContext.getInstance().getNomeUsuario();
-        JLabel labelUsuario = new JLabel("Usuário: " + usuario);
+        String cargo = SessionContext.getInstance().getCargo();
+        JLabel labelUsuario = new JLabel(usuario + " (" + cargo + ")");
         labelUsuario.setForeground(new Color(200, 200, 200));
 
         JButton btnLogout = new JButton("Sair");
@@ -65,8 +66,16 @@ public class MainFrame extends JFrame {
         menuLateral.setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
         menuLateral.setPreferredSize(new Dimension(160, 0));
 
-        for (String item : new String[]{VEICULOS, CLIENTES, CONTRATOS, FUNCIONARIOS, UNIDADES, MANUTENCOES}) {
+        boolean gerente = SessionContext.getInstance().isGerente();
+
+        for (String item : new String[]{VEICULOS, CLIENTES, CONTRATOS, MANUTENCOES}) {
             menuLateral.add(criarBotaoMenu(item));
+            menuLateral.add(Box.createVerticalStrut(4));
+        }
+        if (gerente) {
+            menuLateral.add(criarBotaoMenu(FUNCIONARIOS));
+            menuLateral.add(Box.createVerticalStrut(4));
+            menuLateral.add(criarBotaoMenu(UNIDADES));
             menuLateral.add(Box.createVerticalStrut(4));
         }
 
@@ -76,9 +85,11 @@ public class MainFrame extends JFrame {
         areaConteudo.add(new VeiculoPanel(),     VEICULOS);
         areaConteudo.add(new ClientePanel(),     CLIENTES);
         areaConteudo.add(new ContratoPanel(),    CONTRATOS);
-        areaConteudo.add(new FuncionarioPanel(), FUNCIONARIOS);
-        areaConteudo.add(new UnidadePanel(),     UNIDADES);
         areaConteudo.add(new ManutencaoPanel(),  MANUTENCOES);
+        if (gerente) {
+            areaConteudo.add(new FuncionarioPanel(), FUNCIONARIOS);
+            areaConteudo.add(new UnidadePanel(),     UNIDADES);
+        }
 
         add(areaConteudo, BorderLayout.CENTER);
     }

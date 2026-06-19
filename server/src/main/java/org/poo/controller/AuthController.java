@@ -3,6 +3,7 @@ package org.poo.controller;
 import org.poo.model.AuthenticationToken;
 import org.poo.model.pessoa.Funcionario;
 import org.poo.model.dto.request.LoginDTO;
+import org.poo.model.dto.response.LoginResponseDTO;
 import org.poo.repository.AuthenticationTokenRepository;
 import org.poo.repository.FuncionarioRepository;
 import org.poo.util.PasswordUtils;
@@ -31,11 +32,16 @@ public class AuthController {
                     AuthenticationToken token = new AuthenticationToken();
                     token.setToken(UUID.randomUUID());
                     token.setFuncionario(f);
-                    // Expira em 2 horas
                     token.setExpiraEm(System.currentTimeMillis() + (2 * 60 * 60 * 1000));
-                    
+
                     tokenRepository.save(token);
-                    return ResponseEntity.ok(token);
+                    LoginResponseDTO response = new LoginResponseDTO(
+                            token.getToken().toString(),
+                            token.getExpiraEm(),
+                            f.getCargo().name(),
+                            f.getNome()
+                    );
+                    return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.status(401).body("Usuário ou senha inválidos"));
     }

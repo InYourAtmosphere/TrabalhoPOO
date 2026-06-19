@@ -6,6 +6,7 @@ public class SessionContext {
 
     private String token;
     private String nomeUsuario;
+    private String cargo;
 
     private SessionContext() {}
 
@@ -32,6 +33,18 @@ public class SessionContext {
         this.nomeUsuario = nomeUsuario;
     }
 
+    public String getCargo() {
+        return cargo;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public boolean isGerente() {
+        return "GERENTE".equals(cargo);
+    }
+
     public boolean isAutenticado() {
         return token != null && !token.isBlank();
     }
@@ -39,5 +52,6 @@ public class SessionContext {
     public void limpar() {
         this.token = null;
         this.nomeUsuario = null;
+        this.cargo = null;
     }
 }
