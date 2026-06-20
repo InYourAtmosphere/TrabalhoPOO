@@ -47,10 +47,10 @@ CREATE TABLE IF NOT EXISTS veiculos (
     id BIGSERIAL PRIMARY KEY,
     marca VARCHAR(50) NOT NULL,
     modelo VARCHAR(50) NOT NULL,
-    ano INTEGER NOT NULL,
+    ano INTEGER NOT NULL CHECK (ano >= 1900),
     placa VARCHAR(10) UNIQUE NOT NULL,
     chassi VARCHAR(50) UNIQUE NOT NULL,
-    km_atual DOUBLE PRECISION DEFAULT 0,
+    km_atual DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (km_atual >= 0),
     status VARCHAR(20) NOT NULL,
     data_cadastro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     tipo_veiculo VARCHAR(20) NOT NULL,
@@ -72,11 +72,11 @@ CREATE TABLE IF NOT EXISTS contratos (
     data_inicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_fim_prevista TIMESTAMP NOT NULL,
     data_fim_real TIMESTAMP,
-    valor_diaria DOUBLE PRECISION NOT NULL,
+    valor_diaria DOUBLE PRECISION NOT NULL CHECK (valor_diaria > 0),
     valor_total DOUBLE PRECISION,
     status VARCHAR(20) NOT NULL,
-    km_inicial DOUBLE PRECISION,
-    km_final DOUBLE PRECISION,
+    km_inicial DOUBLE PRECISION CHECK (km_inicial IS NULL OR km_inicial >= 0),
+    km_final DOUBLE PRECISION CHECK (km_final IS NULL OR km_final >= 0),
     forma_pagamento VARCHAR(50),
     CONSTRAINT fk_contrato_cliente FOREIGN KEY (cliente_id) REFERENCES clientes(id),
     CONSTRAINT fk_contrato_veiculo FOREIGN KEY (veiculo_id) REFERENCES veiculos(id),
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS manutencoes (
     data_inicio TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_fim TIMESTAMP,
     descricao TEXT,
-    custo DOUBLE PRECISION DEFAULT 0,
+    custo DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (custo >= 0),
     tipo VARCHAR(20) NOT NULL,
     CONSTRAINT fk_manutencao_veiculo FOREIGN KEY (veiculo_id) REFERENCES veiculos(id) ON DELETE CASCADE
 );
@@ -101,31 +101,6 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
     expira_em BIGINT NOT NULL,
     CONSTRAINT fk_token_funcionario FOREIGN KEY (funcionario_id) REFERENCES funcionarios(id) ON DELETE CASCADE
 );
-
--- =============================================
--- CONSTRAINTS DE INTEGRIDADE (RNF02)
--- Idempotente: roda em toda inicialização da aplicação.
--- =============================================
-
-UPDATE veiculos SET km_atual = 0 WHERE km_atual IS NULL;
-ALTER TABLE veiculos ALTER COLUMN km_atual SET NOT NULL;
-ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS chk_veiculo_km_atual;
-ALTER TABLE veiculos ADD CONSTRAINT chk_veiculo_km_atual CHECK (km_atual >= 0);
-UPDATE veiculos SET ano = 1900 WHERE ano < 1900;
-ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS chk_veiculo_ano;
-ALTER TABLE veiculos ADD CONSTRAINT chk_veiculo_ano CHECK (ano >= 1900);
-
-UPDATE manutencoes SET custo = 0 WHERE custo IS NULL;
-ALTER TABLE manutencoes ALTER COLUMN custo SET NOT NULL;
-ALTER TABLE manutencoes DROP CONSTRAINT IF EXISTS chk_manutencao_custo;
-ALTER TABLE manutencoes ADD CONSTRAINT chk_manutencao_custo CHECK (custo >= 0);
-
-ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_valor_diaria;
-ALTER TABLE contratos ADD CONSTRAINT chk_contrato_valor_diaria CHECK (valor_diaria > 0);
-ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_km_inicial;
-ALTER TABLE contratos ADD CONSTRAINT chk_contrato_km_inicial CHECK (km_inicial IS NULL OR km_inicial >= 0);
-ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_km_final;
-ALTER TABLE contratos ADD CONSTRAINT chk_contrato_km_final CHECK (km_final IS NULL OR km_final >= 0);
 
 -- =============================================
 -- SEED DATA
