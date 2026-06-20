@@ -18,6 +18,7 @@ public class MainFrame extends JFrame {
     private static final String FUNCIONARIOS = "Funcionários";
     private static final String UNIDADES     = "Unidades";
     private static final String MANUTENCOES  = "Manutenções";
+    private static final String GRAFICOS     = "Gráficos";
 
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel areaConteudo = new JPanel(cardLayout);
@@ -85,6 +86,8 @@ public class MainFrame extends JFrame {
             menuLateral.add(Box.createVerticalStrut(6));
             menuLateral.add(criarBotaoMenu(UNIDADES));
             menuLateral.add(Box.createVerticalStrut(6));
+            menuLateral.add(criarBotaoMenu(GRAFICOS));
+            menuLateral.add(Box.createVerticalStrut(6));
         }
 
         add(menuLateral, BorderLayout.WEST);
@@ -97,6 +100,7 @@ public class MainFrame extends JFrame {
         if (gerente) {
             areaConteudo.add(new FuncionarioPanel(), FUNCIONARIOS);
             areaConteudo.add(new UnidadePanel(),     UNIDADES);
+            areaConteudo.add(new DashboardPanel(),   GRAFICOS);
         }
 
         add(areaConteudo, BorderLayout.CENTER);
