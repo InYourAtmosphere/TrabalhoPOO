@@ -29,5 +29,8 @@ public class ContratoDTO {
         if (valorDiaria == null || valorDiaria <= 0) {
             throw new IllegalArgumentException("Valor da diária deve ser maior que zero");
         }
+        if (kmInicial != null && kmInicial < 0) {
+            throw new IllegalArgumentException("Quilometragem inicial não pode ser negativa");
+        }
     }
 }

@@ -103,6 +103,31 @@ CREATE TABLE IF NOT EXISTS authentication_tokens (
 );
 
 -- =============================================
+-- CONSTRAINTS DE INTEGRIDADE (RNF02)
+-- Idempotente: roda em toda inicialização da aplicação.
+-- =============================================
+
+UPDATE veiculos SET km_atual = 0 WHERE km_atual IS NULL;
+ALTER TABLE veiculos ALTER COLUMN km_atual SET NOT NULL;
+ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS chk_veiculo_km_atual;
+ALTER TABLE veiculos ADD CONSTRAINT chk_veiculo_km_atual CHECK (km_atual >= 0);
+UPDATE veiculos SET ano = 1900 WHERE ano < 1900;
+ALTER TABLE veiculos DROP CONSTRAINT IF EXISTS chk_veiculo_ano;
+ALTER TABLE veiculos ADD CONSTRAINT chk_veiculo_ano CHECK (ano >= 1900);
+
+UPDATE manutencoes SET custo = 0 WHERE custo IS NULL;
+ALTER TABLE manutencoes ALTER COLUMN custo SET NOT NULL;
+ALTER TABLE manutencoes DROP CONSTRAINT IF EXISTS chk_manutencao_custo;
+ALTER TABLE manutencoes ADD CONSTRAINT chk_manutencao_custo CHECK (custo >= 0);
+
+ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_valor_diaria;
+ALTER TABLE contratos ADD CONSTRAINT chk_contrato_valor_diaria CHECK (valor_diaria > 0);
+ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_km_inicial;
+ALTER TABLE contratos ADD CONSTRAINT chk_contrato_km_inicial CHECK (km_inicial IS NULL OR km_inicial >= 0);
+ALTER TABLE contratos DROP CONSTRAINT IF EXISTS chk_contrato_km_final;
+ALTER TABLE contratos ADD CONSTRAINT chk_contrato_km_final CHECK (km_final IS NULL OR km_final >= 0);
+
+-- =============================================
 -- SEED DATA
 -- Senha padrão de todos os usuários: admin123
 -- =============================================

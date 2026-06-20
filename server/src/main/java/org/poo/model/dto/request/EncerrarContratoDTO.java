@@ -12,4 +12,10 @@ import lombok.AllArgsConstructor;
 public class EncerrarContratoDTO {
     private Double kmFinal;
     private Long unidadeDevolucaoId;
+
+    public void validate() {
+        if (kmFinal != null && kmFinal < 0) {
+            throw new IllegalArgumentException("Quilometragem final não pode ser negativa");
+        }
+    }
 }

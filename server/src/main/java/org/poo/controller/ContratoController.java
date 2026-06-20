@@ -74,6 +74,11 @@ public class ContratoController {
 
     @PatchMapping("/{id}/encerrar")
     public ResponseEntity<?> encerrarContrato(@PathVariable Long id, @RequestBody EncerrarContratoDTO dto) {
+        try {
+            dto.validate();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
         return contratoRepository.findById(id).map(contrato -> {
             if (contrato.getStatus() != StatusContrato.ATIVO) {
                 return ResponseEntity.badRequest().body("Contrato já encerrado.");
