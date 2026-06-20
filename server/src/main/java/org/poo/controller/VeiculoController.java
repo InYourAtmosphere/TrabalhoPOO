@@ -52,6 +52,23 @@ public class VeiculoController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem registrar veículos.");
         }
 
+        Object unidadeIdRaw = payload.remove("unidadeId");
+        if (unidadeIdRaw == null) {
+            return ResponseEntity.badRequest().body("ID da unidade é obrigatório");
+        }
+
+        long unidadeId;
+        try {
+            unidadeId = ((Number) unidadeIdRaw).longValue();
+        } catch (ClassCastException e) {
+            return ResponseEntity.badRequest().body("ID da unidade inválido");
+        }
+
+        Optional<Unidade> unidadeOpt = unidadeRepository.findById(unidadeId);
+        if (unidadeOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("Unidade não encontrada");
+        }
+
         try {
             Veiculo veiculo;
             if ("carro".equalsIgnoreCase(tipo)) {
@@ -61,6 +78,7 @@ public class VeiculoController {
             } else {
                 return ResponseEntity.badRequest().body("Tipo de veículo inválido");
             }
+            veiculo.setUnidade(unidadeOpt.get());
             return ResponseEntity.status(HttpStatus.CREATED).body(veiculoRepository.save(veiculo));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro ao processar dados do veículo: " + e.getMessage());

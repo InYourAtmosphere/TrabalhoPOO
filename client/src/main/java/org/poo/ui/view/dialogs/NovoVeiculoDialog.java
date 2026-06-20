@@ -1,12 +1,15 @@
 package org.poo.ui.view.dialogs;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NovoVeiculoDialog extends JDialog {
@@ -32,6 +35,9 @@ public class NovoVeiculoDialog extends JDialog {
     private final CardLayout cardLayoutTipo = new CardLayout();
     private final JPanel painelCamposTipo = new JPanel(cardLayoutTipo);
 
+    private final JComboBox<String> comboUnidade = new JComboBox<>();
+    private final List<Long> idsUnidade = new ArrayList<>();
+
     private final JLabel labelErro = new JLabel(" ");
     private final JButton botaoSalvar = new JButton("Salvar");
 
@@ -44,6 +50,7 @@ public class NovoVeiculoDialog extends JDialog {
         configurarComponentes();
         pack();
         setLocationRelativeTo(owner);
+        carregarUnidades();
     }
 
     private void configurarComponentes() {
@@ -66,6 +73,12 @@ public class NovoVeiculoDialog extends JDialog {
         linha = adicionarCampo(painel, gbc, linha, "Placa*:", campoPlaca);
         linha = adicionarCampo(painel, gbc, linha, "Chassi*:", campoChassi);
         linha = adicionarCampo(painel, gbc, linha, "KM atual:", campoKmAtual);
+
+        gbc.gridx = 0; gbc.gridy = linha; gbc.gridwidth = 1;
+        painel.add(new JLabel("Unidade*:"), gbc);
+        gbc.gridx = 1;
+        painel.add(comboUnidade, gbc);
+        linha++;
 
         JPanel painelCarro = new JPanel(new GridBagLayout());
         GridBagConstraints gbcCarro = new GridBagConstraints();
@@ -124,6 +137,35 @@ public class NovoVeiculoDialog extends JDialog {
         return linha + 1;
     }
 
+    private void carregarUnidades() {
+        botaoSalvar.setEnabled(false);
+        new SwingWorker<JsonNode, Void>() {
+            @Override
+            protected JsonNode doInBackground() throws Exception {
+                return MAPPER.readTree(ApiClient.get("/unidades").body());
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JsonNode lista = get();
+                    comboUnidade.removeAllItems();
+                    idsUnidade.clear();
+                    for (JsonNode u : lista) {
+                        idsUnidade.add(u.path("id").asLong());
+                        comboUnidade.addItem(u.path("nomeUnidade").asText());
+                    }
+                    botaoSalvar.setEnabled(comboUnidade.getItemCount() > 0);
+                    if (comboUnidade.getItemCount() == 0) {
+                        labelErro.setText("Nenhuma unidade cadastrada.");
+                    }
+                } catch (Exception ex) {
+                    labelErro.setText("Erro ao carregar unidades.");
+                }
+            }
+        }.execute();
+    }
+
     private void salvar() {
         String marca = campoMarca.getText().trim();
         String modelo = campoModelo.getText().trim();
@@ -133,6 +175,11 @@ public class NovoVeiculoDialog extends JDialog {
 
         if (marca.isBlank() || modelo.isBlank() || ano.isBlank() || placa.isBlank() || chassi.isBlank()) {
             labelErro.setText("Marca, modelo, ano, placa e chassi são obrigatórios.");
+            return;
+        }
+
+        if (idsUnidade.isEmpty()) {
+            labelErro.setText("Selecione uma unidade.");
             return;
         }
 
@@ -156,6 +203,7 @@ public class NovoVeiculoDialog extends JDialog {
         corpo.put("placa", placa);
         corpo.put("chassi", chassi);
         corpo.put("kmAtual", kmNumero);
+        corpo.put("unidadeId", idsUnidade.get(comboUnidade.getSelectedIndex()));
 
         if (isCarro) {
             try {
