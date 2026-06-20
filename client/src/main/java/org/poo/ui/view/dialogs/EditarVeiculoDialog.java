@@ -21,6 +21,7 @@ public class EditarVeiculoDialog extends JDialog {
     private final JTextField campoAno = new JTextField(18);
     private final JTextField campoPlaca = new JTextField(18);
     private final JTextField campoKmAtual = new JTextField(18);
+    private final JComboBox<String> comboStatus = new JComboBox<>(new String[]{"DISPONIVEL", "LOCADO", "EM_MANUTENCAO", "DESATIVADO"});
 
     // Campos carro
     private final JTextField campoQtdPortas = new JTextField(18);
@@ -35,6 +36,7 @@ public class EditarVeiculoDialog extends JDialog {
     private final JButton botaoSalvar = new JButton("Salvar");
 
     private boolean isMoto = false;
+    private String statusOriginal;
     private final Runnable aoSalvarComSucesso;
 
     public EditarVeiculoDialog(Window owner, long veiculoId, Runnable aoSalvarComSucesso) {
@@ -60,6 +62,12 @@ public class EditarVeiculoDialog extends JDialog {
         linha = adicionarCampo(painel, gbc, linha, "Ano*:", campoAno);
         linha = adicionarCampo(painel, gbc, linha, "Placa*:", campoPlaca);
         linha = adicionarCampo(painel, gbc, linha, "KM atual:", campoKmAtual);
+
+        gbc.gridx = 0; gbc.gridy = linha; gbc.gridwidth = 1;
+        painel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        painel.add(comboStatus, gbc);
+        linha++;
 
         gbc.gridx = 0; gbc.gridy = linha; gbc.gridwidth = 2;
         painel.add(painelTipoEspecifico, gbc);
@@ -135,6 +143,10 @@ public class EditarVeiculoDialog extends JDialog {
                     campoAno.setText(v.path("ano").asText());
                     campoPlaca.setText(v.path("placa").asText());
                     campoKmAtual.setText(v.path("kmAtual").asText("0"));
+
+                    statusOriginal = v.path("status").asText("DISPONIVEL");
+                    comboStatus.setSelectedItem(statusOriginal);
+                    comboStatus.setEnabled(!"LOCADO".equals(statusOriginal));
 
                     isMoto = v.has("cilindrada");
                     if (isMoto) {
@@ -217,10 +229,42 @@ public class EditarVeiculoDialog extends JDialog {
                 try {
                     ApiClient.ApiResponse resposta = get();
                     if (resposta.isSuccess()) {
+                        String statusSelecionado = (String) comboStatus.getSelectedItem();
+                        if (comboStatus.isEnabled() && !statusSelecionado.equals(statusOriginal)) {
+                            atualizarStatus(statusSelecionado);
+                        } else {
+                            aoSalvarComSucesso.run();
+                            dispose();
+                        }
+                    } else {
+                        labelErro.setText("Erro: " + resposta.body());
+                        botaoSalvar.setEnabled(true);
+                    }
+                } catch (Exception ex) {
+                    labelErro.setText("Erro de conexão com o servidor.");
+                    botaoSalvar.setEnabled(true);
+                }
+            }
+        }.execute();
+    }
+
+    private void atualizarStatus(String status) {
+        new SwingWorker<ApiClient.ApiResponse, Void>() {
+            @Override
+            protected ApiClient.ApiResponse doInBackground() throws Exception {
+                String json = MAPPER.writeValueAsString(Map.of("status", status));
+                return ApiClient.patch("/veiculos/" + veiculoId + "/status", json);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    ApiClient.ApiResponse resposta = get();
+                    if (resposta.isSuccess()) {
                         aoSalvarComSucesso.run();
                         dispose();
                     } else {
-                        labelErro.setText("Erro: " + resposta.body());
+                        labelErro.setText("Erro ao atualizar status: " + resposta.body());
                         botaoSalvar.setEnabled(true);
                     }
                 } catch (Exception ex) {

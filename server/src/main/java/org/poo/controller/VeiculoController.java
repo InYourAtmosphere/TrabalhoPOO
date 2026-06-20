@@ -5,6 +5,7 @@ import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
 import org.poo.model.dto.request.UpdateVeiculoDTO;
+import org.poo.model.dto.request.UpdateStatusVeiculoDTO;
 import org.poo.model.dto.request.TransferenciaVeiculoDTO;
 import org.poo.repository.VeiculoRepository;
 import org.poo.repository.UnidadeRepository;
@@ -110,6 +111,24 @@ public class VeiculoController {
                 
                 return (ResponseEntity<?>) ResponseEntity.ok(veiculoRepository.save(veiculo));
             }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> atualizarStatusVeiculo(@PathVariable Long id, @RequestBody UpdateStatusVeiculoDTO dto, HttpServletRequest request) {
+        if (!AuthorizationUtils.isGerente(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem alterar o status do veículo.");
+        }
+
+        try {
+            dto.validate();
+            if (veiculoRepository.findById(id).isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            veiculoRepository.updateStatus(id, dto.getStatus());
+            return ResponseEntity.ok(veiculoRepository.findById(id).get());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
