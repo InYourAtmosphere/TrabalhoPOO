@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.view.dialogs.EditarFuncionarioDialog;
 import org.poo.ui.view.dialogs.NovoFuncionarioDialog;
 
@@ -25,14 +26,21 @@ public class FuncionarioPanel extends JPanel {
 
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        Estilos.estilizarToolbar(toolbar);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovoFuncionario = new JButton("Novo Funcionário");
+        Estilos.estilizarBotaoSecundario(btnAtualizar);
+        Estilos.estilizarBotaoPrimario(btnNovoFuncionario);
+        Estilos.estilizarBotaoSecundario(btnEditar);
+        Estilos.estilizarBotaoPerigo(btnExcluir);
         btnEditar.setEnabled(false);
         btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
+        toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(btnNovoFuncionario);
         toolbar.addSeparator();
         toolbar.add(btnEditar);
+        toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(btnExcluir);
         add(toolbar, BorderLayout.NORTH);
 
@@ -43,6 +51,7 @@ public class FuncionarioPanel extends JPanel {
         tabela = new JTable(tableModel);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         tabela.getSelectionModel().addListSelectionListener(e -> {

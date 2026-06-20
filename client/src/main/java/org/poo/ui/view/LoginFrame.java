@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.model.dto.request.LoginDTO;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class LoginFrame extends JFrame {
@@ -25,46 +27,70 @@ public class LoginFrame extends JFrame {
 
     private void configurarJanela() {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(380, 260);
+        setSize(440, 360);
         setLocationRelativeTo(null);
         setResizable(false);
+        getContentPane().setBackground(Estilos.CINZA_FUNDO);
     }
 
     private void configurarComponentes() {
-        JPanel painel = new JPanel(new GridBagLayout());
-        painel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        setLayout(new GridBagLayout());
+
+        JPanel cartao = Estilos.criarCartao();
+        cartao.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(6, 5, 6, 5);
 
         JLabel titulo = new JLabel("AlugaFácil", SwingConstants.CENTER);
-        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 20f));
+        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 24f));
+        titulo.setForeground(Estilos.AZUL_PRIMARIO);
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        painel.add(titulo, gbc);
+        gbc.insets = new Insets(0, 5, 4, 5);
+        cartao.add(titulo, gbc);
 
-        gbc.gridwidth = 1;
-        gbc.gridy = 1; gbc.gridx = 0;
-        painel.add(new JLabel("Usuário:"), gbc);
-        gbc.gridx = 1;
-        painel.add(campoUsername, gbc);
+        JLabel subtitulo = new JLabel("Acesse sua conta para continuar", SwingConstants.CENTER);
+        subtitulo.setForeground(Estilos.CINZA_TEXTO);
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 5, 20, 5);
+        cartao.add(subtitulo, gbc);
 
+        campoUsername.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Estilos.CINZA_BORDA, 1),
+                new EmptyBorder(6, 8, 6, 8)));
+        campoSenha.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Estilos.CINZA_BORDA, 1),
+                new EmptyBorder(6, 8, 6, 8)));
+
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(4, 5, 2, 5);
         gbc.gridy = 2; gbc.gridx = 0;
-        painel.add(new JLabel("Senha:"), gbc);
-        gbc.gridx = 1;
-        painel.add(campoSenha, gbc);
-
-        labelErro.setForeground(Color.RED);
-        labelErro.setFont(labelErro.getFont().deriveFont(Font.PLAIN, 11f));
-        gbc.gridy = 3; gbc.gridx = 0; gbc.gridwidth = 2;
-        painel.add(labelErro, gbc);
+        cartao.add(new JLabel("Usuário"), gbc);
+        gbc.gridy = 3;
+        gbc.insets = new Insets(0, 5, 14, 5);
+        cartao.add(campoUsername, gbc);
 
         gbc.gridy = 4;
-        painel.add(botaoEntrar, gbc);
+        gbc.insets = new Insets(4, 5, 2, 5);
+        cartao.add(new JLabel("Senha"), gbc);
+        gbc.gridy = 5;
+        gbc.insets = new Insets(0, 5, 6, 5);
+        cartao.add(campoSenha, gbc);
+
+        Estilos.estilizarLabelErro(labelErro);
+        gbc.gridy = 6;
+        gbc.insets = new Insets(0, 5, 10, 5);
+        cartao.add(labelErro, gbc);
+
+        Estilos.estilizarBotaoPrimario(botaoEntrar);
+        gbc.gridy = 7;
+        gbc.insets = new Insets(4, 5, 0, 5);
+        cartao.add(botaoEntrar, gbc);
 
         botaoEntrar.addActionListener(e -> tentarLogin());
         campoSenha.addActionListener(e -> tentarLogin());
 
-        add(painel);
+        add(cartao);
     }
 
     private void tentarLogin() {

@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.EditarClienteDialog;
 import org.poo.ui.view.dialogs.NovoClienteDialog;
@@ -26,17 +27,24 @@ public class ClientePanel extends JPanel {
 
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        Estilos.estilizarToolbar(toolbar);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovoCliente = new JButton("Novo Cliente");
+        Estilos.estilizarBotaoSecundario(btnAtualizar);
+        Estilos.estilizarBotaoPrimario(btnNovoCliente);
         toolbar.add(btnAtualizar);
+        toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(btnNovoCliente);
 
         boolean gerente = SessionContext.getInstance().isGerente();
         if (gerente) {
+            Estilos.estilizarBotaoSecundario(btnEditar);
+            Estilos.estilizarBotaoPerigo(btnExcluir);
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
             toolbar.addSeparator();
             toolbar.add(btnEditar);
+            toolbar.add(Box.createHorizontalStrut(8));
             toolbar.add(btnExcluir);
         }
         add(toolbar, BorderLayout.NORTH);
@@ -48,6 +56,7 @@ public class ClientePanel extends JPanel {
         tabela = new JTable(tableModel);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         if (gerente) {

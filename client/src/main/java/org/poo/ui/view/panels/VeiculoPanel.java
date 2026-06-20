@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.EditarVeiculoDialog;
 import org.poo.ui.view.dialogs.NovoVeiculoDialog;
@@ -26,17 +27,24 @@ public class VeiculoPanel extends JPanel {
 
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        Estilos.estilizarToolbar(toolbar);
         JButton btnAtualizar = new JButton("Atualizar");
+        Estilos.estilizarBotaoSecundario(btnAtualizar);
         toolbar.add(btnAtualizar);
 
         boolean gerente = SessionContext.getInstance().isGerente();
         if (gerente) {
             JButton btnNovoVeiculo = new JButton("Novo Veículo");
+            Estilos.estilizarBotaoPrimario(btnNovoVeiculo);
+            Estilos.estilizarBotaoSecundario(btnEditar);
+            Estilos.estilizarBotaoPerigo(btnExcluir);
             btnEditar.setEnabled(false);
             btnExcluir.setEnabled(false);
+            toolbar.add(Box.createHorizontalStrut(8));
             toolbar.add(btnNovoVeiculo);
             toolbar.addSeparator();
             toolbar.add(btnEditar);
+            toolbar.add(Box.createHorizontalStrut(8));
             toolbar.add(btnExcluir);
             btnNovoVeiculo.addActionListener(e ->
                     new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
@@ -51,6 +59,7 @@ public class VeiculoPanel extends JPanel {
         tabela = new JTable(tableModel);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         if (gerente) {

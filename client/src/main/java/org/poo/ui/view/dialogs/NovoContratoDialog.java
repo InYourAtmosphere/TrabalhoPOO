@@ -3,6 +3,7 @@ package org.poo.ui.view.dialogs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,14 +61,15 @@ public class NovoContratoDialog extends JDialog {
         linha = adicionarCampo(painel, gbc, linha, "KM inicial:", campoKmInicial);
         linha = adicionarCampo(painel, gbc, linha, "Forma de pagamento:", campoFormaPagamento);
 
-        labelErro.setForeground(Color.RED);
-        labelErro.setFont(labelErro.getFont().deriveFont(Font.PLAIN, 11f));
+        Estilos.estilizarLabelErro(labelErro);
         gbc.gridx = 0; gbc.gridy = linha; gbc.gridwidth = 2;
         painel.add(labelErro, gbc);
         linha++;
 
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        Estilos.estilizarBotaoPrimario(botaoSalvar);
         JButton botaoCancelar = new JButton("Cancelar");
+        Estilos.estilizarBotaoSecundario(botaoCancelar);
         botaoCancelar.addActionListener(e -> dispose());
         botaoSalvar.addActionListener(e -> salvar());
         painelBotoes.add(botaoCancelar);

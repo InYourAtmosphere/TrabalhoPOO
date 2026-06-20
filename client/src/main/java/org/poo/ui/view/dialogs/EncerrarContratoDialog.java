@@ -3,6 +3,7 @@ package org.poo.ui.view.dialogs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,16 +65,15 @@ public class EncerrarContratoDialog extends JDialog {
         painel.add(comboUnidadeDevolucao, gbc);
         linha++;
 
-        labelErro.setForeground(Color.RED);
-        labelErro.setFont(labelErro.getFont().deriveFont(Font.PLAIN, 11f));
+        Estilos.estilizarLabelErro(labelErro);
         gbc.gridx = 0; gbc.gridy = linha; gbc.gridwidth = 2;
         painel.add(labelErro, gbc);
         linha++;
 
-        botaoConfirmar.setBackground(new Color(200, 60, 60));
-        botaoConfirmar.setForeground(Color.WHITE);
+        Estilos.estilizarBotaoPerigo(botaoConfirmar);
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton botaoCancelar = new JButton("Cancelar");
+        Estilos.estilizarBotaoSecundario(botaoCancelar);
         botaoCancelar.addActionListener(e -> dispose());
         botaoConfirmar.addActionListener(e -> encerrar());
         painelBotoes.add(botaoCancelar);

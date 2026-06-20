@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.view.dialogs.NovaManutencaoDialog;
 
@@ -23,10 +24,14 @@ public class ManutencaoPanel extends JPanel {
 
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        Estilos.estilizarToolbar(toolbar);
         JButton btnAtualizar = new JButton("Atualizar");
+        Estilos.estilizarBotaoSecundario(btnAtualizar);
         toolbar.add(btnAtualizar);
         if (SessionContext.getInstance().isGerente()) {
             JButton btnNovaManutencao = new JButton("Registrar Manutenção");
+            Estilos.estilizarBotaoPrimario(btnNovaManutencao);
+            toolbar.add(Box.createHorizontalStrut(8));
             toolbar.add(btnNovaManutencao);
             btnNovaManutencao.addActionListener(e ->
                     new NovaManutencaoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
@@ -40,6 +45,7 @@ public class ManutencaoPanel extends JPanel {
         tabela = new JTable(tableModel);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());

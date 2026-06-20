@@ -3,6 +3,7 @@ package org.poo.ui.view.panels;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
+import org.poo.ui.Estilos;
 import org.poo.ui.view.dialogs.NovaUnidadeDialog;
 
 import javax.swing.*;
@@ -23,10 +24,15 @@ public class UnidadePanel extends JPanel {
 
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+        Estilos.estilizarToolbar(toolbar);
         JButton btnAtualizar = new JButton("Atualizar");
         JButton btnNovaUnidade = new JButton("Nova Unidade");
+        Estilos.estilizarBotaoSecundario(btnAtualizar);
+        Estilos.estilizarBotaoPrimario(btnNovaUnidade);
+        Estilos.estilizarBotaoPerigo(btnExcluir);
         btnExcluir.setEnabled(false);
         toolbar.add(btnAtualizar);
+        toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(btnNovaUnidade);
         toolbar.addSeparator();
         toolbar.add(btnExcluir);
@@ -39,6 +45,7 @@ public class UnidadePanel extends JPanel {
         tabela = new JTable(tableModel);
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         tabela.getSelectionModel().addListSelectionListener(e ->
