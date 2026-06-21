@@ -158,7 +158,7 @@ public class DashboardPanel extends JPanel {
         new SwingWorker<JsonNode[], Void>() {
             @Override
             protected JsonNode[] doInBackground() throws Exception {
-                JsonNode veiculos = MAPPER.readTree(ApiClient.get("/veiculos").body());
+                JsonNode veiculos = MAPPER.readTree(ApiClient.get("/veiculos?todasUnidades=true").body());
                 JsonNode contratos = MAPPER.readTree(ApiClient.get("/contratos").body());
                 JsonNode manutencoes = MAPPER.readTree(ApiClient.get("/manutencoes").body());
                 return new JsonNode[]{veiculos, contratos, manutencoes};

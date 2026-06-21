@@ -153,7 +153,7 @@ public class VeiculoRepository {
         try (Connection conn = DatabaseConfig.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 veiculos.add(mapResultSetToVeiculo(rs));
             }
@@ -163,7 +163,25 @@ public class VeiculoRepository {
         return veiculos;
     }
 
-    
+
+    public List<Veiculo> findByUnidade(Long unidadeId) {
+        String sql = "SELECT * FROM veiculos WHERE ativo = TRUE AND unidade_id = ?";
+        List<Veiculo> veiculos = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, unidadeId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    veiculos.add(mapResultSetToVeiculo(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao buscar veiculos por unidade", e);
+        }
+        return veiculos;
+    }
+
+
     public void updateStatus(Long id, StatusVeiculo status) {
         String sql = "UPDATE veiculos SET status = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();

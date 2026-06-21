@@ -3,7 +3,6 @@ package org.poo.model.veiculo;
 import java.time.LocalDateTime;
 
 import org.poo.model.Unidade;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,7 +20,6 @@ public abstract class Veiculo {
     private Double kmAtual;
     private StatusVeiculo status;
 
-    @JsonIgnore
     private Unidade unidade;
 
     private LocalDateTime dataCadastro;

@@ -1,6 +1,7 @@
 package org.poo.controller;
 
 import org.poo.model.Unidade;
+import org.poo.model.pessoa.Funcionario;
 import org.poo.model.veiculo.Veiculo;
 import org.poo.model.veiculo.CarroPopular;
 import org.poo.model.veiculo.Motocicleta;
@@ -36,8 +37,35 @@ public class VeiculoController {
     }
 
     @GetMapping
-    public List<Veiculo> listarVeiculos() {
-        return veiculoRepository.findAll();
+    public ResponseEntity<?> listarVeiculos(
+            @RequestParam(required = false) Long unidadeId,
+            @RequestParam(required = false, defaultValue = "false") boolean todasUnidades,
+            HttpServletRequest request) {
+        Funcionario logado = (Funcionario) request.getAttribute("usuarioLogado");
+
+        if (todasUnidades) {
+            if (!AuthorizationUtils.isGerente(request)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Acesso negado: somente gerentes podem visualizar a frota de todas as unidades.");
+            }
+            return ResponseEntity.ok(veiculoRepository.findAll());
+        }
+
+        Long unidadeFiltro = unidadeId;
+        if (unidadeFiltro == null && logado != null && logado.getUnidade() != null) {
+            unidadeFiltro = logado.getUnidade().getId();
+        }
+
+        if (unidadeFiltro != null && !AuthorizationUtils.isGerente(request)
+                && (logado == null || logado.getUnidade() == null || !logado.getUnidade().getId().equals(unidadeFiltro))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Acesso negado: você só pode visualizar a frota da sua própria unidade.");
+        }
+
+        List<Veiculo> veiculos = unidadeFiltro != null
+                ? veiculoRepository.findByUnidade(unidadeFiltro)
+                : veiculoRepository.findAll();
+        return ResponseEntity.ok(veiculos);
     }
 
     @GetMapping("/{id}")

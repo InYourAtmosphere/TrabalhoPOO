@@ -12,15 +12,23 @@ import org.poo.ui.view.dialogs.NovoVeiculoDialog;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class VeiculoPanel extends JPanel {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final String OPCAO_MINHA_UNIDADE = "Minha Unidade";
+    private static final String OPCAO_TODAS_UNIDADES = "Todas as Unidades";
+    private static final int INTERVALO_ATUALIZACAO_MS = 15_000;
 
     private final DefaultTableModel tableModel;
     private final JTable tabela;
     private final JButton btnEditar = new JButton("Editar");
     private final JButton btnExcluir = new JButton("Excluir");
+    private final JComboBox<String> comboUnidade = new JComboBox<>();
+    private final Map<String, Long> idsPorNomeUnidade = new LinkedHashMap<>();
+    private final Timer timerAtualizacao;
 
     public VeiculoPanel() {
         super(new BorderLayout(5, 5));
@@ -35,6 +43,13 @@ public class VeiculoPanel extends JPanel {
 
         boolean gerente = SessionContext.getInstance().isGerente();
         if (gerente) {
+            comboUnidade.addItem(OPCAO_MINHA_UNIDADE);
+            comboUnidade.addItem(OPCAO_TODAS_UNIDADES);
+            toolbar.add(Box.createHorizontalStrut(8));
+            toolbar.add(new JLabel("Unidade: "));
+            toolbar.add(comboUnidade);
+            carregarUnidadesDisponiveis();
+
             JButton btnNovoVeiculo = new JButton("Novo Veículo");
             Estilos.estilizarBotaoPrimario(btnNovoVeiculo);
             Estilos.estilizarBotaoSecundario(btnEditar);
@@ -49,6 +64,7 @@ public class VeiculoPanel extends JPanel {
             toolbar.add(btnExcluir);
             btnNovoVeiculo.addActionListener(e ->
                     new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+            comboUnidade.addActionListener(e -> carregarDados());
         }
 
         toolbar.add(Box.createHorizontalGlue());
@@ -57,7 +73,7 @@ public class VeiculoPanel extends JPanel {
         toolbar.add(btnExportarCSV);
         add(toolbar, BorderLayout.NORTH);
 
-        String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo"};
+        String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo", "Unidade"};
         tableModel = new DefaultTableModel(colunas, 0) {
             @Override public boolean isCellEditable(int row, int col) { return false; }
         };
@@ -80,6 +96,57 @@ public class VeiculoPanel extends JPanel {
         btnAtualizar.addActionListener(e -> carregarDados());
         btnExportarCSV.addActionListener(e -> ExportUtils.exportarCSV(this, "veiculos", tableModel));
         carregarDados();
+
+        timerAtualizacao = new Timer(INTERVALO_ATUALIZACAO_MS, e -> carregarDados());
+        timerAtualizacao.setRepeats(true);
+        addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0) {
+                if (isShowing()) {
+                    carregarDados();
+                    timerAtualizacao.start();
+                } else {
+                    timerAtualizacao.stop();
+                }
+            }
+        });
+    }
+
+    private void carregarUnidadesDisponiveis() {
+        new SwingWorker<JsonNode, Void>() {
+            @Override
+            protected JsonNode doInBackground() throws Exception {
+                return MAPPER.readTree(ApiClient.get("/unidades").body());
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    JsonNode unidades = get();
+                    for (JsonNode u : unidades) {
+                        String nome = u.path("nomeUnidade").asText();
+                        idsPorNomeUnidade.put(nome, u.path("id").asLong());
+                        comboUnidade.addItem(nome);
+                    }
+                } catch (Exception ignored) {
+                    // Mantém apenas as opções padrão se a listagem de unidades falhar.
+                }
+            }
+        }.execute();
+    }
+
+    private String construirCaminhoVeiculos() {
+        if (!SessionContext.getInstance().isGerente()) {
+            return "/veiculos";
+        }
+        String selecionado = (String) comboUnidade.getSelectedItem();
+        if (selecionado == null || OPCAO_MINHA_UNIDADE.equals(selecionado)) {
+            return "/veiculos";
+        }
+        if (OPCAO_TODAS_UNIDADES.equals(selecionado)) {
+            return "/veiculos?todasUnidades=true";
+        }
+        Long unidadeId = idsPorNomeUnidade.get(selecionado);
+        return unidadeId != null ? "/veiculos?unidadeId=" + unidadeId : "/veiculos";
     }
 
     private long idSelecionado() {
@@ -133,19 +200,23 @@ public class VeiculoPanel extends JPanel {
     }
 
     private void carregarDados() {
+        String caminho = construirCaminhoVeiculos();
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/veiculos").body());
+                return MAPPER.readTree(ApiClient.get(caminho).body());
             }
 
             @Override
             protected void done() {
                 try {
                     JsonNode lista = get();
+                    int linhaSelecionada = tabela.getSelectedRow();
+                    Long idSelecionadoAntes = linhaSelecionada >= 0 ? (Long) tableModel.getValueAt(linhaSelecionada, 0) : null;
                     tableModel.setRowCount(0);
                     for (JsonNode v : lista) {
                         String tipo = v.has("cilindrada") ? "Motocicleta" : "Carro";
+                        String unidade = v.path("unidade").path("nomeUnidade").asText("-");
                         tableModel.addRow(new Object[]{
                             v.path("id").asLong(),
                             v.path("placa").asText(),
@@ -154,8 +225,17 @@ public class VeiculoPanel extends JPanel {
                             v.path("ano").asInt(),
                             String.format("%.0f km", v.path("kmAtual").asDouble()),
                             v.path("status").asText(),
-                            tipo
+                            tipo,
+                            unidade
                         });
+                    }
+                    if (idSelecionadoAntes != null) {
+                        for (int i = 0; i < tableModel.getRowCount(); i++) {
+                            if (idSelecionadoAntes.equals(tableModel.getValueAt(i, 0))) {
+                                tabela.setRowSelectionInterval(i, i);
+                                break;
+                            }
+                        }
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(VeiculoPanel.this,
