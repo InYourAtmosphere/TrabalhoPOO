@@ -13,6 +13,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
+import org.poo.ui.util.PdfExporter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,6 +54,11 @@ public class DashboardPanel extends JPanel {
         Estilos.estilizarBotaoSecundario(btnAtualizar);
         btnAtualizar.addActionListener(e -> carregarDados());
         toolbar.add(btnAtualizar);
+        toolbar.add(Box.createHorizontalGlue());
+        JButton btnExportarPDF = new JButton("Exportar Relatorio PDF");
+        Estilos.estilizarBotaoSecundario(btnExportarPDF);
+        btnExportarPDF.addActionListener(e -> PdfExporter.exportar(this));
+        toolbar.add(btnExportarPDF);
         add(toolbar, BorderLayout.NORTH);
 
         JPanel conteudo = new JPanel();

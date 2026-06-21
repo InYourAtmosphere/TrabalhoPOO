@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
+import org.poo.ui.util.ExportUtils;
 import org.poo.ui.view.dialogs.EditarClienteDialog;
 import org.poo.ui.view.dialogs.NovoClienteDialog;
 
@@ -47,6 +48,10 @@ public class ClientePanel extends JPanel {
             toolbar.add(Box.createHorizontalStrut(8));
             toolbar.add(btnExcluir);
         }
+        toolbar.add(Box.createHorizontalGlue());
+        JButton btnExportarCSV = new JButton("Exportar CSV");
+        Estilos.estilizarBotaoSecundario(btnExportarCSV);
+        toolbar.add(btnExportarCSV);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Nome", "Email", "Telefone", "Documento"};
@@ -72,6 +77,7 @@ public class ClientePanel extends JPanel {
         btnAtualizar.addActionListener(e -> carregarDados());
         btnNovoCliente.addActionListener(e ->
                 new NovoClienteDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
+        btnExportarCSV.addActionListener(e -> ExportUtils.exportarCSV(this, "clientes", tableModel));
         carregarDados();
     }
 

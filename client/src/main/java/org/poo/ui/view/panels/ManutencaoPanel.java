@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
+import org.poo.ui.util.ExportUtils;
 import org.poo.ui.view.dialogs.NovaManutencaoDialog;
 
 import javax.swing.*;
@@ -36,6 +37,10 @@ public class ManutencaoPanel extends JPanel {
             btnNovaManutencao.addActionListener(e ->
                     new NovaManutencaoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         }
+        toolbar.add(Box.createHorizontalGlue());
+        JButton btnExportarCSV = new JButton("Exportar CSV");
+        Estilos.estilizarBotaoSecundario(btnExportarCSV);
+        toolbar.add(btnExportarCSV);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Veículo", "Tipo", "Descrição", "Data Início", "Custo"};
@@ -49,6 +54,7 @@ public class ManutencaoPanel extends JPanel {
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnExportarCSV.addActionListener(e -> ExportUtils.exportarCSV(this, "manutencoes", tableModel));
         carregarDados();
     }
 

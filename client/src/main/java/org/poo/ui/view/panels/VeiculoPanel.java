@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
+import org.poo.ui.util.ExportUtils;
 import org.poo.ui.view.dialogs.EditarVeiculoDialog;
 import org.poo.ui.view.dialogs.NovoVeiculoDialog;
 
@@ -50,6 +51,10 @@ public class VeiculoPanel extends JPanel {
                     new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
         }
 
+        toolbar.add(Box.createHorizontalGlue());
+        JButton btnExportarCSV = new JButton("Exportar CSV");
+        Estilos.estilizarBotaoSecundario(btnExportarCSV);
+        toolbar.add(btnExportarCSV);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo"};
@@ -73,6 +78,7 @@ public class VeiculoPanel extends JPanel {
         }
 
         btnAtualizar.addActionListener(e -> carregarDados());
+        btnExportarCSV.addActionListener(e -> ExportUtils.exportarCSV(this, "veiculos", tableModel));
         carregarDados();
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.poo.ui.ApiClient;
 import org.poo.ui.Estilos;
+import org.poo.ui.util.ExportUtils;
 import org.poo.ui.view.dialogs.EncerrarContratoDialog;
 import org.poo.ui.view.dialogs.NovoContratoDialog;
 
@@ -37,6 +38,10 @@ public class ContratoPanel extends JPanel {
         toolbar.add(btnNovoContrato);
         toolbar.addSeparator();
         toolbar.add(btnEncerrar);
+        toolbar.add(Box.createHorizontalGlue());
+        JButton btnExportarCSV = new JButton("Exportar CSV");
+        Estilos.estilizarBotaoSecundario(btnExportarCSV);
+        toolbar.add(btnExportarCSV);
         add(toolbar, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Cliente", "Veículo", "Unidade Retirada", "Data Início", "Data Fim", "Valor Diária", "Status"};
@@ -62,6 +67,7 @@ public class ContratoPanel extends JPanel {
             long id = (long) tableModel.getValueAt(tabela.getSelectedRow(), 0);
             new EncerrarContratoDialog(SwingUtilities.getWindowAncestor(this), id, this::carregarDados).setVisible(true);
         });
+        btnExportarCSV.addActionListener(e -> ExportUtils.exportarCSV(this, "contratos", tableModel));
         carregarDados();
     }
 
