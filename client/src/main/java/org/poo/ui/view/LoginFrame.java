@@ -1,9 +1,7 @@
 package org.poo.ui.view;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.model.dto.request.LoginDTO;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.AuthService;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 
@@ -12,6 +10,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class LoginFrame extends JFrame {
+
+    private final AuthService authService = new AuthService();
 
     private final JTextField campoUsername = new JTextField(20);
     private final JPasswordField campoSenha = new JPasswordField(20);
@@ -105,41 +105,25 @@ public class LoginFrame extends JFrame {
         botaoEntrar.setEnabled(false);
         labelErro.setText(" ");
 
-        new SwingWorker<Boolean, Void>() {
-            private String mensagemErro;
-
+        new SwingWorker<AuthService.LoginResult, Void>() {
             @Override
-            protected Boolean doInBackground() throws Exception {
-                LoginDTO dto = new LoginDTO();
-                dto.setUsername(username);
-                dto.setPassword(senha);
-                String body = new ObjectMapper().writeValueAsString(dto);
-                ApiClient.ApiResponse response = ApiClient.post("/auth/login", body);
-
-                if (response.isSuccess()) {
-                    JsonNode json = new ObjectMapper().readTree(response.body());
-                    SessionContext.getInstance().setToken(json.path("token").asText());
-                    SessionContext.getInstance().setCargo(json.path("cargo").asText());
-                    SessionContext.getInstance().setNomeUsuario(json.path("nome").asText());
-                    return true;
-                } else {
-                    mensagemErro = "Usuário ou senha inválidos.";
-                    return false;
-                }
+            protected AuthService.LoginResult doInBackground() throws Exception {
+                return authService.login(username, senha);
             }
 
             @Override
             protected void done() {
                 try {
-                    if (get()) {
-                        new MainFrame();
-                        dispose();
-                    } else {
-                        labelErro.setText(mensagemErro);
-                        botaoEntrar.setEnabled(true);
-                    }
+                    AuthService.LoginResult resultado = get();
+                    SessionContext.getInstance().setToken(resultado.token());
+                    SessionContext.getInstance().setCargo(resultado.cargo());
+                    SessionContext.getInstance().setNomeUsuario(resultado.nome());
+                    new MainFrame();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Usuário ou senha inválidos."
+                            : "Erro de conexão com o servidor.");
                     botaoEntrar.setEnabled(true);
                 }
             }

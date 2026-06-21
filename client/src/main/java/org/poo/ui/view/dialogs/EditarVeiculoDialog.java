@@ -1,8 +1,8 @@
 package org.poo.ui.view.dialogs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class EditarVeiculoDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final VeiculoService veiculoService = new VeiculoService();
 
     private final long veiculoId;
 
@@ -131,7 +131,7 @@ public class EditarVeiculoDialog extends JDialog {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/veiculos/" + veiculoId).body());
+                return veiculoService.buscarPorId(veiculoId);
             }
 
             @Override
@@ -217,31 +217,28 @@ public class EditarVeiculoDialog extends JDialog {
         botaoSalvar.setEnabled(false);
         labelErro.setText(" ");
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                String json = MAPPER.writeValueAsString(corpo);
-                return ApiClient.patch("/veiculos/" + veiculoId, json);
+            protected Void doInBackground() throws Exception {
+                veiculoService.atualizar(veiculoId, corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        String statusSelecionado = (String) comboStatus.getSelectedItem();
-                        if (comboStatus.isEnabled() && !statusSelecionado.equals(statusOriginal)) {
-                            atualizarStatus(statusSelecionado);
-                        } else {
-                            aoSalvarComSucesso.run();
-                            dispose();
-                        }
+                    get();
+                    String statusSelecionado = (String) comboStatus.getSelectedItem();
+                    if (comboStatus.isEnabled() && !statusSelecionado.equals(statusOriginal)) {
+                        atualizarStatus(statusSelecionado);
                     } else {
-                        labelErro.setText("Erro: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
+                        aoSalvarComSucesso.run();
+                        dispose();
                     }
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }
@@ -249,26 +246,23 @@ public class EditarVeiculoDialog extends JDialog {
     }
 
     private void atualizarStatus(String status) {
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                String json = MAPPER.writeValueAsString(Map.of("status", status));
-                return ApiClient.patch("/veiculos/" + veiculoId + "/status", json);
+            protected Void doInBackground() throws Exception {
+                veiculoService.atualizarStatus(veiculoId, status);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro ao atualizar status: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro ao atualizar status: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }

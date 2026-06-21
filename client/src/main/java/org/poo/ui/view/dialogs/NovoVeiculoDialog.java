@@ -1,8 +1,9 @@
 package org.poo.ui.view.dialogs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.UnidadeService;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -14,7 +15,6 @@ import java.util.Map;
 
 public class NovoVeiculoDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String CARRO = "Carro Popular";
     private static final String MOTO = "Motocicleta";
 
@@ -41,6 +41,8 @@ public class NovoVeiculoDialog extends JDialog {
     private final JLabel labelErro = new JLabel(" ");
     private final JButton botaoSalvar = new JButton("Salvar");
 
+    private final UnidadeService unidadeService = new UnidadeService();
+    private final VeiculoService veiculoService = new VeiculoService();
     private final Runnable aoSalvarComSucesso;
 
     public NovoVeiculoDialog(Window owner, Runnable aoSalvarComSucesso) {
@@ -142,7 +144,7 @@ public class NovoVeiculoDialog extends JDialog {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/unidades").body());
+                return unidadeService.listar();
             }
 
             @Override
@@ -226,26 +228,23 @@ public class NovoVeiculoDialog extends JDialog {
         botaoSalvar.setEnabled(false);
         labelErro.setText(" ");
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                String json = MAPPER.writeValueAsString(corpo);
-                return ApiClient.post("/veiculos?tipo=" + tipoParam, json);
+            protected Void doInBackground() throws Exception {
+                veiculoService.criar(tipoParam, corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro ao salvar: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro ao salvar: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }

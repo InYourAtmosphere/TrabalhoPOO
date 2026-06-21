@@ -1,6 +1,6 @@
 package org.poo.ui.view;
 
-import org.poo.ui.ApiClient;
+import org.poo.service.AuthService;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.view.panels.*;
@@ -20,6 +20,7 @@ public class MainFrame extends JFrame {
     private static final String MANUTENCOES  = "Manutenções";
     private static final String GRAFICOS     = "Gráficos";
 
+    private final AuthService authService = new AuthService();
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel areaConteudo = new JPanel(cardLayout);
     private final Map<String, JButton> botoesMenu = new LinkedHashMap<>();
@@ -138,7 +139,7 @@ public class MainFrame extends JFrame {
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                ApiClient.delete("/auth/logout");
+                authService.logout();
                 return null;
             }
 

@@ -1,8 +1,11 @@
 package org.poo.ui.view.dialogs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.ClienteService;
+import org.poo.service.ContratoService;
+import org.poo.service.UnidadeService;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -17,8 +20,12 @@ import java.util.Map;
 
 public class NovoContratoDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+    private final ClienteService clienteService = new ClienteService();
+    private final VeiculoService veiculoService = new VeiculoService();
+    private final UnidadeService unidadeService = new UnidadeService();
+    private final ContratoService contratoService = new ContratoService();
 
     private final JComboBox<String> comboCliente = new JComboBox<>();
     private final JComboBox<String> comboVeiculo = new JComboBox<>();
@@ -101,9 +108,9 @@ public class NovoContratoDialog extends JDialog {
         new SwingWorker<JsonNode[], Void>() {
             @Override
             protected JsonNode[] doInBackground() throws Exception {
-                JsonNode clientes = MAPPER.readTree(ApiClient.get("/clientes").body());
-                JsonNode veiculos = MAPPER.readTree(ApiClient.get("/veiculos").body());
-                JsonNode unidades = MAPPER.readTree(ApiClient.get("/unidades").body());
+                JsonNode clientes = clienteService.listar();
+                JsonNode veiculos = veiculoService.listar();
+                JsonNode unidades = unidadeService.listar();
                 return new JsonNode[]{clientes, veiculos, unidades};
             }
 
@@ -188,25 +195,23 @@ public class NovoContratoDialog extends JDialog {
         String formaPag = campoFormaPagamento.getText().trim();
         if (!formaPag.isEmpty()) corpo.put("formaPagamento", formaPag);
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                return ApiClient.post("/contratos", MAPPER.writeValueAsString(corpo));
+            protected Void doInBackground() throws Exception {
+                contratoService.criar(corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }

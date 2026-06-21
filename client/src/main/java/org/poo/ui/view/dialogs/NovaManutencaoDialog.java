@@ -1,8 +1,9 @@
 package org.poo.ui.view.dialogs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.ManutencaoService;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -14,8 +15,10 @@ import java.util.Map;
 
 public class NovaManutencaoDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String[] TIPOS = {"PREVENTIVA", "CORRETIVA", "PREDITIVA"};
+
+    private final VeiculoService veiculoService = new VeiculoService();
+    private final ManutencaoService manutencaoService = new ManutencaoService();
 
     private final JComboBox<String> comboVeiculo = new JComboBox<>();
     private final JComboBox<String> comboTipo = new JComboBox<>(TIPOS);
@@ -95,7 +98,7 @@ public class NovaManutencaoDialog extends JDialog {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/veiculos").body());
+                return veiculoService.listar();
             }
 
             @Override
@@ -142,25 +145,23 @@ public class NovaManutencaoDialog extends JDialog {
         corpo.put("descricao", descricao);
         corpo.put("custo", custo);
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                return ApiClient.post("/manutencoes", MAPPER.writeValueAsString(corpo));
+            protected Void doInBackground() throws Exception {
+                manutencaoService.criar(corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }

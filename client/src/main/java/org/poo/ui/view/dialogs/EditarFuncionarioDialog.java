@@ -1,8 +1,9 @@
 package org.poo.ui.view.dialogs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.FuncionarioService;
+import org.poo.service.UnidadeService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -14,7 +15,8 @@ import java.util.Map;
 
 public class EditarFuncionarioDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final FuncionarioService funcionarioService = new FuncionarioService();
+    private final UnidadeService unidadeService = new UnidadeService();
 
     private final long funcionarioId;
 
@@ -109,8 +111,8 @@ public class EditarFuncionarioDialog extends JDialog {
         new SwingWorker<JsonNode[], Void>() {
             @Override
             protected JsonNode[] doInBackground() throws Exception {
-                JsonNode funcionario = MAPPER.readTree(ApiClient.get("/funcionarios/" + funcionarioId).body());
-                JsonNode unidades = MAPPER.readTree(ApiClient.get("/unidades").body());
+                JsonNode funcionario = funcionarioService.buscarPorId(funcionarioId);
+                JsonNode unidades = unidadeService.listar();
                 return new JsonNode[]{funcionario, unidades};
             }
 
@@ -177,25 +179,23 @@ public class EditarFuncionarioDialog extends JDialog {
         corpo.put("unidadeId", unidadeId);
         if (!senha.isEmpty()) corpo.put("password", senha);
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                return ApiClient.patch("/funcionarios/" + funcionarioId, MAPPER.writeValueAsString(corpo));
+            protected Void doInBackground() throws Exception {
+                funcionarioService.atualizar(funcionarioId, corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }

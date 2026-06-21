@@ -1,8 +1,8 @@
 package org.poo.ui.view.panels;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.UnidadeService;
 import org.poo.ui.Estilos;
 import org.poo.ui.view.dialogs.NovaUnidadeDialog;
 
@@ -12,8 +12,7 @@ import java.awt.*;
 
 public class UnidadePanel extends JPanel {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final UnidadeService unidadeService = new UnidadeService();
     private final DefaultTableModel tableModel;
     private final JTable tabela;
     private final JButton btnExcluir = new JButton("Excluir");
@@ -71,26 +70,24 @@ public class UnidadePanel extends JPanel {
         if (confirmacao != JOptionPane.YES_OPTION) return;
 
         long id = (long) tableModel.getValueAt(row, 0);
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                return ApiClient.delete("/unidades/" + id);
+            protected Void doInBackground() throws Exception {
+                unidadeService.deletar(id);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        carregarDados();
-                    } else {
-                        JOptionPane.showMessageDialog(UnidadePanel.this,
-                                "Erro ao excluir: " + resposta.body(),
-                                "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
+                    get();
+                    carregarDados();
                 } catch (Exception ex) {
+                    String mensagem = ApiException.isCausa(ex)
+                            ? "Erro ao excluir: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.";
                     JOptionPane.showMessageDialog(UnidadePanel.this,
-                            "Erro de conexão com o servidor.",
+                            mensagem,
                             "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -101,7 +98,7 @@ public class UnidadePanel extends JPanel {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/unidades").body());
+                return unidadeService.listar();
             }
 
             @Override

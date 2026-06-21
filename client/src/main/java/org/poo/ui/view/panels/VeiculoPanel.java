@@ -1,8 +1,9 @@
 package org.poo.ui.view.panels;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.UnidadeService;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.util.ExportUtils;
@@ -17,11 +18,12 @@ import java.util.Map;
 
 public class VeiculoPanel extends JPanel {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String OPCAO_MINHA_UNIDADE = "Minha Unidade";
     private static final String OPCAO_TODAS_UNIDADES = "Todas as Unidades";
     private static final int INTERVALO_ATUALIZACAO_MS = 15_000;
 
+    private final VeiculoService veiculoService = new VeiculoService();
+    private final UnidadeService unidadeService = new UnidadeService();
     private final DefaultTableModel tableModel;
     private final JTable tabela;
     private final JButton btnEditar = new JButton("Editar");
@@ -115,7 +117,7 @@ public class VeiculoPanel extends JPanel {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/unidades").body());
+                return unidadeService.listar();
             }
 
             @Override
@@ -134,19 +136,19 @@ public class VeiculoPanel extends JPanel {
         }.execute();
     }
 
-    private String construirCaminhoVeiculos() {
+    private JsonNode buscarVeiculos() throws Exception {
         if (!SessionContext.getInstance().isGerente()) {
-            return "/veiculos";
+            return veiculoService.listar();
         }
         String selecionado = (String) comboUnidade.getSelectedItem();
         if (selecionado == null || OPCAO_MINHA_UNIDADE.equals(selecionado)) {
-            return "/veiculos";
+            return veiculoService.listar();
         }
         if (OPCAO_TODAS_UNIDADES.equals(selecionado)) {
-            return "/veiculos?todasUnidades=true";
+            return veiculoService.listarTodasUnidades();
         }
         Long unidadeId = idsPorNomeUnidade.get(selecionado);
-        return unidadeId != null ? "/veiculos?unidadeId=" + unidadeId : "/veiculos";
+        return unidadeId != null ? veiculoService.listarPorUnidade(unidadeId) : veiculoService.listar();
     }
 
     private long idSelecionado() {
@@ -173,26 +175,24 @@ public class VeiculoPanel extends JPanel {
         if (confirmacao != JOptionPane.YES_OPTION) return;
 
         long id = idSelecionado();
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                return ApiClient.delete("/veiculos/" + id);
+            protected Void doInBackground() throws Exception {
+                veiculoService.deletar(id);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        carregarDados();
-                    } else {
-                        JOptionPane.showMessageDialog(VeiculoPanel.this,
-                                "Erro ao excluir: " + resposta.body(),
-                                "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
+                    get();
+                    carregarDados();
                 } catch (Exception ex) {
+                    String mensagem = ApiException.isCausa(ex)
+                            ? "Erro ao excluir: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.";
                     JOptionPane.showMessageDialog(VeiculoPanel.this,
-                            "Erro de conexão com o servidor.",
+                            mensagem,
                             "Erro", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -200,11 +200,10 @@ public class VeiculoPanel extends JPanel {
     }
 
     private void carregarDados() {
-        String caminho = construirCaminhoVeiculos();
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get(caminho).body());
+                return buscarVeiculos();
             }
 
             @Override

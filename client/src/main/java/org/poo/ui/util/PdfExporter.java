@@ -1,13 +1,14 @@
 package org.poo.ui.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.poo.ui.ApiClient;
+import org.poo.service.ContratoService;
+import org.poo.service.ManutencaoService;
+import org.poo.service.VeiculoService;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -21,7 +22,9 @@ import java.util.Locale;
 
 public class PdfExporter {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final VeiculoService VEICULO_SERVICE = new VeiculoService();
+    private static final ContratoService CONTRATO_SERVICE = new ContratoService();
+    private static final ManutencaoService MANUTENCAO_SERVICE = new ManutencaoService();
 
     // A4 paisagem
     private static final PDRectangle TAMANHO = new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth());
@@ -48,9 +51,9 @@ public class PdfExporter {
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                JsonNode veiculos   = MAPPER.readTree(ApiClient.get("/veiculos").body());
-                JsonNode contratos  = MAPPER.readTree(ApiClient.get("/contratos").body());
-                JsonNode manutencoes = MAPPER.readTree(ApiClient.get("/manutencoes").body());
+                JsonNode veiculos   = VEICULO_SERVICE.listar();
+                JsonNode contratos  = CONTRATO_SERVICE.listar();
+                JsonNode manutencoes = MANUTENCAO_SERVICE.listar();
                 gerar(f, veiculos, contratos, manutencoes);
                 return null;
             }

@@ -1,7 +1,6 @@
 package org.poo.ui.view.panels;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -11,7 +10,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
-import org.poo.ui.ApiClient;
+import org.poo.service.ContratoService;
+import org.poo.service.ManutencaoService;
+import org.poo.service.VeiculoService;
 import org.poo.ui.Estilos;
 import org.poo.ui.util.PdfExporter;
 
@@ -28,8 +29,11 @@ import java.util.TreeMap;
 
 public class DashboardPanel extends JPanel {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final NumberFormat MOEDA = NumberFormat.getCurrencyInstance(new Locale("pt", "BR"));
+
+    private final VeiculoService veiculoService = new VeiculoService();
+    private final ContratoService contratoService = new ContratoService();
+    private final ManutencaoService manutencaoService = new ManutencaoService();
 
     private final DefaultPieDataset<String> veiculosPorStatus = new DefaultPieDataset<>();
     private final DefaultCategoryDataset veiculosPorTipo = new DefaultCategoryDataset();
@@ -158,9 +162,9 @@ public class DashboardPanel extends JPanel {
         new SwingWorker<JsonNode[], Void>() {
             @Override
             protected JsonNode[] doInBackground() throws Exception {
-                JsonNode veiculos = MAPPER.readTree(ApiClient.get("/veiculos?todasUnidades=true").body());
-                JsonNode contratos = MAPPER.readTree(ApiClient.get("/contratos").body());
-                JsonNode manutencoes = MAPPER.readTree(ApiClient.get("/manutencoes").body());
+                JsonNode veiculos = veiculoService.listarTodasUnidades();
+                JsonNode contratos = contratoService.listar();
+                JsonNode manutencoes = manutencaoService.listar();
                 return new JsonNode[]{veiculos, contratos, manutencoes};
             }
 

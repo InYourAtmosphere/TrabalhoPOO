@@ -1,8 +1,7 @@
 package org.poo.ui.view.panels;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ContratoService;
 import org.poo.ui.Estilos;
 import org.poo.ui.util.ExportUtils;
 import org.poo.ui.view.dialogs.EncerrarContratoDialog;
@@ -14,8 +13,7 @@ import java.awt.*;
 
 public class ContratoPanel extends JPanel {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ContratoService contratoService = new ContratoService();
     private final DefaultTableModel tableModel;
     private final JTable tabela;
     private final JButton btnEncerrar = new JButton("Encerrar Contrato");
@@ -75,7 +73,7 @@ public class ContratoPanel extends JPanel {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/contratos").body());
+                return contratoService.listar();
             }
 
             @Override

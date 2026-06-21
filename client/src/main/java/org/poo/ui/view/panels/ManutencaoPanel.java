@@ -1,8 +1,7 @@
 package org.poo.ui.view.panels;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ManutencaoService;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.util.ExportUtils;
@@ -14,8 +13,7 @@ import java.awt.*;
 
 public class ManutencaoPanel extends JPanel {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final ManutencaoService manutencaoService = new ManutencaoService();
     private final DefaultTableModel tableModel;
     private final JTable tabela;
 
@@ -62,7 +60,7 @@ public class ManutencaoPanel extends JPanel {
         new SwingWorker<JsonNode, Void>() {
             @Override
             protected JsonNode doInBackground() throws Exception {
-                return MAPPER.readTree(ApiClient.get("/manutencoes").body());
+                return manutencaoService.listar();
             }
 
             @Override

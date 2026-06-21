@@ -1,7 +1,7 @@
 package org.poo.ui.view.dialogs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.poo.ui.ApiClient;
+import org.poo.service.ApiException;
+import org.poo.service.UnidadeService;
 import org.poo.ui.Estilos;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class NovaUnidadeDialog extends JDialog {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final UnidadeService unidadeService = new UnidadeService();
 
     private final JTextField campoNome = new JTextField(22);
     private final JTextField campoLogradouro = new JTextField(22);
@@ -109,26 +109,23 @@ public class NovaUnidadeDialog extends JDialog {
         corpo.put("nomeUnidade", nome);
         corpo.put("endereco", endereco);
 
-        new SwingWorker<ApiClient.ApiResponse, Void>() {
+        new SwingWorker<Void, Void>() {
             @Override
-            protected ApiClient.ApiResponse doInBackground() throws Exception {
-                String json = MAPPER.writeValueAsString(corpo);
-                return ApiClient.post("/unidades", json);
+            protected Void doInBackground() throws Exception {
+                unidadeService.criar(corpo);
+                return null;
             }
 
             @Override
             protected void done() {
                 try {
-                    ApiClient.ApiResponse resposta = get();
-                    if (resposta.isSuccess()) {
-                        aoSalvarComSucesso.run();
-                        dispose();
-                    } else {
-                        labelErro.setText("Erro ao salvar: " + resposta.body());
-                        botaoSalvar.setEnabled(true);
-                    }
+                    get();
+                    aoSalvarComSucesso.run();
+                    dispose();
                 } catch (Exception ex) {
-                    labelErro.setText("Erro de conexão com o servidor.");
+                    labelErro.setText(ApiException.isCausa(ex)
+                            ? "Erro ao salvar: " + ApiException.mensagemDe(ex)
+                            : "Erro de conexão com o servidor.");
                     botaoSalvar.setEnabled(true);
                 }
             }
