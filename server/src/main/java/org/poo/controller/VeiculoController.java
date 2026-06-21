@@ -77,8 +77,8 @@ public class VeiculoController {
 
     @PostMapping
     public ResponseEntity<?> registrarVeiculo(@RequestParam String tipo, @RequestBody Map<String, Object> payload, HttpServletRequest request) {
-        if (!AuthorizationUtils.isGerente(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem registrar veículos.");
+        if (!AuthorizationUtils.isGerenteOuSupervisor(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes ou supervisores podem registrar veículos.");
         }
 
         Object unidadeIdRaw = payload.remove("unidadeId");
@@ -91,6 +91,11 @@ public class VeiculoController {
             unidadeId = ((Number) unidadeIdRaw).longValue();
         } catch (ClassCastException e) {
             return ResponseEntity.badRequest().body("ID da unidade inválido");
+        }
+
+        if (!AuthorizationUtils.podeGerenciarUnidade(request, unidadeId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Acesso negado: supervisores só podem registrar veículos da própria unidade.");
         }
 
         Optional<Unidade> unidadeOpt = unidadeRepository.findById(unidadeId);
@@ -116,9 +121,12 @@ public class VeiculoController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> atualizarDadosVeiculo(@PathVariable Long id, @RequestBody UpdateVeiculoDTO updates, HttpServletRequest request) {
-        if (!AuthorizationUtils.isGerente(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem atualizar veículos.");
+        if (!AuthorizationUtils.isGerenteOuSupervisor(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes ou supervisores podem atualizar veículos.");
         }
+
+        ResponseEntity<?> erroAcesso = verificarAcessoVeiculo(id, request);
+        if (erroAcesso != null) return erroAcesso;
 
         try {
             updates.validate();
@@ -146,9 +154,12 @@ public class VeiculoController {
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> atualizarStatusVeiculo(@PathVariable Long id, @RequestBody UpdateStatusVeiculoDTO dto, HttpServletRequest request) {
-        if (!AuthorizationUtils.isGerente(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem alterar o status do veículo.");
+        if (!AuthorizationUtils.isGerenteOuSupervisor(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes ou supervisores podem alterar o status do veículo.");
         }
+
+        ResponseEntity<?> erroAcesso = verificarAcessoVeiculo(id, request);
+        if (erroAcesso != null) return erroAcesso;
 
         try {
             dto.validate();
@@ -191,14 +202,30 @@ public class VeiculoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletarVeiculo(@PathVariable Long id, HttpServletRequest request) {
-        if (!AuthorizationUtils.isGerente(request)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes podem deletar veículos.");
+        if (!AuthorizationUtils.isGerenteOuSupervisor(request)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Acesso negado: Somente gerentes ou supervisores podem deletar veículos.");
         }
+
+        ResponseEntity<?> erroAcesso = verificarAcessoVeiculo(id, request);
+        if (erroAcesso != null) return erroAcesso;
 
         if (veiculoRepository.findById(id).isPresent()) {
             veiculoRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private ResponseEntity<?> verificarAcessoVeiculo(Long id, HttpServletRequest request) {
+        Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
+        if (veiculoOpt.isEmpty()) {
+            return null;
+        }
+        Long unidadeId = veiculoOpt.get().getUnidade() != null ? veiculoOpt.get().getUnidade().getId() : null;
+        if (!AuthorizationUtils.podeGerenciarUnidade(request, unidadeId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("Acesso negado: supervisores só podem gerenciar veículos da própria unidade.");
+        }
+        return null;
     }
 }

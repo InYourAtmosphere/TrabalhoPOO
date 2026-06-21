@@ -44,6 +44,7 @@ public class VeiculoPanel extends JPanel {
         toolbar.add(btnAtualizar);
 
         boolean gerente = SessionContext.getInstance().isGerente();
+        boolean podeGerenciar = SessionContext.getInstance().isGerenteOuSupervisor();
         if (gerente) {
             comboUnidade.addItem(OPCAO_MINHA_UNIDADE);
             comboUnidade.addItem(OPCAO_TODAS_UNIDADES);
@@ -51,7 +52,9 @@ public class VeiculoPanel extends JPanel {
             toolbar.add(new JLabel("Unidade: "));
             toolbar.add(comboUnidade);
             carregarUnidadesDisponiveis();
-
+            comboUnidade.addActionListener(e -> carregarDados());
+        }
+        if (podeGerenciar) {
             JButton btnNovoVeiculo = new JButton("Novo Veículo");
             Estilos.estilizarBotaoPrimario(btnNovoVeiculo);
             Estilos.estilizarBotaoSecundario(btnEditar);
@@ -66,7 +69,6 @@ public class VeiculoPanel extends JPanel {
             toolbar.add(btnExcluir);
             btnNovoVeiculo.addActionListener(e ->
                     new NovoVeiculoDialog(SwingUtilities.getWindowAncestor(this), this::carregarDados).setVisible(true));
-            comboUnidade.addActionListener(e -> carregarDados());
         }
 
         toolbar.add(Box.createHorizontalGlue());
@@ -85,7 +87,7 @@ public class VeiculoPanel extends JPanel {
         Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        if (gerente) {
+        if (podeGerenciar) {
             tabela.getSelectionModel().addListSelectionListener(e -> {
                 boolean selecionado = tabela.getSelectedRow() >= 0;
                 btnEditar.setEnabled(selecionado);

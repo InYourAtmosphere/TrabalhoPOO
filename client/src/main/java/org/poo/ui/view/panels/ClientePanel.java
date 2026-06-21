@@ -36,8 +36,8 @@ public class ClientePanel extends JPanel {
         toolbar.add(Box.createHorizontalStrut(8));
         toolbar.add(btnNovoCliente);
 
-        boolean gerente = SessionContext.getInstance().isGerente();
-        if (gerente) {
+        boolean podeGerenciar = SessionContext.getInstance().isGerenteOuSupervisor();
+        if (podeGerenciar) {
             Estilos.estilizarBotaoSecundario(btnEditar);
             Estilos.estilizarBotaoPerigo(btnExcluir);
             btnEditar.setEnabled(false);
@@ -63,7 +63,7 @@ public class ClientePanel extends JPanel {
         Estilos.estilizarTabela(tabela);
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        if (gerente) {
+        if (podeGerenciar) {
             tabela.getSelectionModel().addListSelectionListener(e -> {
                 boolean selecionado = tabela.getSelectedRow() >= 0;
                 btnEditar.setEnabled(selecionado);

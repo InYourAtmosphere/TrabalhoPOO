@@ -27,7 +27,7 @@ public class ManutencaoPanel extends JPanel {
         JButton btnAtualizar = new JButton("Atualizar");
         Estilos.estilizarBotaoSecundario(btnAtualizar);
         toolbar.add(btnAtualizar);
-        if (SessionContext.getInstance().isGerente()) {
+        if (SessionContext.getInstance().isGerenteOuSupervisor()) {
             JButton btnNovaManutencao = new JButton("Registrar Manutenção");
             Estilos.estilizarBotaoPrimario(btnNovaManutencao);
             toolbar.add(Box.createHorizontalStrut(8));

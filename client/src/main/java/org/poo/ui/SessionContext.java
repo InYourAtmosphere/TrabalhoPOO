@@ -45,6 +45,14 @@ public class SessionContext {
         return "GERENTE".equals(cargo);
     }
 
+    public boolean isSupervisor() {
+        return "SUPERVISOR".equals(cargo);
+    }
+
+    public boolean isGerenteOuSupervisor() {
+        return isGerente() || isSupervisor();
+    }
+
     public boolean isAutenticado() {
         return token != null && !token.isBlank();
     }

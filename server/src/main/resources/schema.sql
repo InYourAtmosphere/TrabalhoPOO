@@ -117,7 +117,8 @@ INSERT INTO funcionarios (nome, email, username, password, matricula, cargo, uni
     ('Administrador', 'admin@alugafacil.com',    'admin',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ADM001', 'GERENTE',   1),
     ('Carlos Mendes', 'carlos@alugafacil.com',   'carlos',   '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD001', 'ATENDENTE', 1),
     ('Ana Souza',     'ana@alugafacil.com',      'ana',      '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'ATD002', 'ATENDENTE', 1),
-    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'GERENTE',   1)
+    ('Bruno Lima',    'bruno@alugafacil.com',    'bruno',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'GES001', 'GERENTE',   1),
+    ('Sofia Ramos',   'sofia@alugafacil.com',    'sofia',    '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9', 'SUP001', 'SUPERVISOR', 1)
 ON CONFLICT (username) DO UPDATE SET
     password = EXCLUDED.password,
     cargo = EXCLUDED.cargo,

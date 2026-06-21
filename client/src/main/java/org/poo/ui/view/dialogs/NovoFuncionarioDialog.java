@@ -24,7 +24,7 @@ public class NovoFuncionarioDialog extends JDialog {
     private final JTextField campoMatricula = new JTextField(22);
     private final JTextField campoUsername = new JTextField(22);
     private final JPasswordField campoPassword = new JPasswordField(22);
-    private final JComboBox<String> comboCargo = new JComboBox<>(new String[]{"ATENDENTE", "GERENTE"});
+    private final JComboBox<String> comboCargo = new JComboBox<>(new String[]{"ATENDENTE", "SUPERVISOR", "GERENTE"});
     private final JComboBox<String> comboUnidade = new JComboBox<>();
     private final List<Long> idsUnidade = new ArrayList<>();
     private final JLabel labelErro = new JLabel(" ");

@@ -77,14 +77,17 @@ public class MainFrame extends JFrame {
         menuLateral.setPreferredSize(new Dimension(180, 0));
 
         boolean gerente = SessionContext.getInstance().isGerente();
+        boolean podeGerenciarFuncionarios = SessionContext.getInstance().isGerenteOuSupervisor();
 
         for (String item : new String[]{VEICULOS, CLIENTES, CONTRATOS, MANUTENCOES}) {
             menuLateral.add(criarBotaoMenu(item));
             menuLateral.add(Box.createVerticalStrut(6));
         }
-        if (gerente) {
+        if (podeGerenciarFuncionarios) {
             menuLateral.add(criarBotaoMenu(FUNCIONARIOS));
             menuLateral.add(Box.createVerticalStrut(6));
+        }
+        if (gerente) {
             menuLateral.add(criarBotaoMenu(UNIDADES));
             menuLateral.add(Box.createVerticalStrut(6));
             menuLateral.add(criarBotaoMenu(GRAFICOS));
@@ -98,8 +101,10 @@ public class MainFrame extends JFrame {
         areaConteudo.add(new ClientePanel(),     CLIENTES);
         areaConteudo.add(new ContratoPanel(),    CONTRATOS);
         areaConteudo.add(new ManutencaoPanel(),  MANUTENCOES);
-        if (gerente) {
+        if (podeGerenciarFuncionarios) {
             areaConteudo.add(new FuncionarioPanel(), FUNCIONARIOS);
+        }
+        if (gerente) {
             areaConteudo.add(new UnidadePanel(),     UNIDADES);
             areaConteudo.add(new DashboardPanel(),   GRAFICOS);
         }
