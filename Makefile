@@ -2,10 +2,10 @@
 
 help:
 	@echo "Alvos disponiveis:"
-	@echo "  make server  - roda somente o servidor (API REST, porta 8081)"
-	@echo "  make client  - roda somente o cliente (desktop Swing)"
-	@echo "  make run     - roda servidor e cliente juntos (servidor em background)"
-	@echo "  make clean   - para os containers do banco e apaga o volume (dados perdidos)"
+	@echo "  make server  - roda somente o servidor"
+	@echo "  make client  - roda somente o cliente"
+	@echo "  make run     - roda servidor e cliente juntos"
+	@echo "  make clean   - para os containers do banco e apaga o volume"
 
 server:
 	cd server && mvn spring-boot:run
