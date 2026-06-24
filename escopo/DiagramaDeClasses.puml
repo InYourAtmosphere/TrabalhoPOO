@@ -1,5 +1,67 @@
 @startuml
 
+class Endereco {
+  - logradouro : String
+  - numero : String
+  - complemento : String
+  - bairro : String
+  - cidade : String
+  - estado : String
+  - cep : String
+  + Endereco()
+  + static builder() : Builder
+}
+
+class "Endereco.Builder" as EnderecoBuilder {
+  + logradouro(String) : Builder
+  + numero(String) : Builder
+  + complemento(String) : Builder
+  + bairro(String) : Builder
+  + cidade(String) : Builder
+  + estado(String) : Builder
+  + cep(String) : Builder
+  + build() : Endereco
+}
+
+abstract class Pessoa {
+  - id : Long
+  - nome : String
+  - telefone : String
+  - email : String
+  - dataCadastro : LocalDateTime
+  + Pessoa()
+}
+
+class Cliente {
+  - documentoIdentidade : String
+  - documentoHabilitacao : String
+  - endereco : Endereco
+  - ativo : boolean
+  + static builder() : Builder
+}
+
+class Funcionario {
+  - matricula : String
+  - cargo : Cargo
+  - username : String
+  - password : String
+  - unidade : Unidade
+  - ativo : boolean
+  + static builder() : Builder
+}
+
+enum Cargo {
+  GERENTE
+  SUPERVISOR
+  ATENDENTE
+}
+
+class AuthenticationToken {
+  - token : UUID
+  - funcionario : Funcionario
+  - expiraEm : long
+}
+
 class Unidade {
   - id : Long
   - nomeUnidade : String
@@ -15,8 +77,40 @@ class "Unidade.Builder" as UnidadeBuilder {
   + build() : Unidade
 }
 
-class Veiculo
-note top of Veiculo: Definido em DiagramaDeClassesVeiculos.puml
+abstract class Veiculo {
+  - id : Long
+  - marca : String
+  - modelo : String
+  - ano : Integer
+  - placa : String
+  - chassi : String
+  - kmAtual : Double
+  - status : StatusVeiculo
+  - unidade : Unidade
+  - dataCadastro : LocalDateTime
+  - atualizadoEm : LocalDateTime
+  - ativo : boolean
+  + Veiculo()
+}
+
+enum StatusVeiculo {
+  DISPONIVEL
+  LOCADO
+  EM_MANUTENCAO
+  DESATIVADO
+}
+
+class CarroPopular {
+  - quantidadePortas : int
+  - temArCondicionado : boolean
+  + static builder() : Builder
+}
+
+class Motocicleta {
+  - cilindrada : int
+  - temBau : boolean
+  + static builder() : Builder
+}
 
 class Manutencao {
   - id : Long
@@ -84,17 +178,25 @@ class "Contrato.Builder" as ContratoBuilder {
   + build() : Contrato
 }
 
-class Cliente
-note top of Cliente: Definido em DiagramaDeClassesClientes.puml
-
+Pessoa <|-- Cliente
+Pessoa <|-- Funcionario
+Funcionario "1" -- "1" Cargo
+Funcionario "0..*" -- "0..1" Unidade : trabalha em >
+AuthenticationToken "0..*" -- "1" Funcionario
+Unidade "1" -- "1" Endereco
+Cliente "1" -- "0..1" Endereco
 Unidade "1" -- "0..*" Veiculo : gerencia >
+Veiculo <|-- CarroPopular
+Veiculo <|-- Motocicleta
+Veiculo "1" -- "1" StatusVeiculo
 Veiculo "1" -- "0..*" Manutencao : submetido a >
 Manutencao "1" -- "1" TipoManutencao
-Veiculo "1" --* "1" Contrato
-Cliente "1" --* "1" Contrato
+Cliente "1" -- "0..*" Contrato : realiza >
+Veiculo "1" -- "0..*" Contrato : possui histórico em >
 Contrato "1" -- "1" StatusContrato
 Unidade "0..*" -- "1" Contrato : retirada >
 Unidade "0..*" -- "0..1" Contrato : devolução >
+Endereco +-- EnderecoBuilder
 Unidade +-- UnidadeBuilder
 Manutencao +-- ManutencaoBuilder
 Contrato +-- ContratoBuilder

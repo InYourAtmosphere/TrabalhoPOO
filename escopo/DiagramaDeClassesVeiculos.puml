@@ -1,5 +1,12 @@
 @startuml
 
+class Unidade {
+  - id : Long
+  - nomeUnidade : String
+  - endereco : Endereco
+  - veiculos : List<Veiculo>
+}
+
 abstract class Veiculo {
   - id : Long
   - marca : String
@@ -61,6 +68,7 @@ class "Motocicleta.Builder" as MotocicletaBuilder {
   + build() : Motocicleta
 }
 
+Unidade "1" -- "0..*" Veiculo : gerencia >
 Veiculo <|-- CarroPopular
 Veiculo <|-- Motocicleta
 Veiculo "1" -- "1" StatusVeiculo

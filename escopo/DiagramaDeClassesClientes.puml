@@ -6,6 +6,7 @@ abstract class Pessoa {
   - telefone : String
   - email : String
   - dataCadastro : LocalDateTime
+  + Pessoa()
 }
 
 class Cliente {
@@ -13,7 +14,6 @@ class Cliente {
   - documentoHabilitacao : String
   - endereco : Endereco
   - ativo : boolean
-  + Cliente()
   + static builder() : Builder
 }
 
@@ -28,6 +28,46 @@ class "Cliente.Builder" as ClienteBuilder {
   + build() : Cliente
 }
 
+class Funcionario {
+  - matricula : String
+  - cargo : Cargo
+  - username : String
+  - password : String
+  - unidade : Unidade
+  - ativo : boolean
+  + static builder() : Builder
+}
+
+class "Funcionario.Builder" as FuncionarioBuilder {
+  + nome(String) : Builder
+  + telefone(String) : Builder
+  + email(String) : Builder
+  + matricula(String) : Builder
+  + cargo(Cargo) : Builder
+  + username(String) : Builder
+  + password(String) : Builder
+  + unidade(Unidade) : Builder
+  + ativo(boolean) : Builder
+  + build() : Funcionario
+}
+
+enum Cargo {
+  GERENTE
+  SUPERVISOR
+  ATENDENTE
+}
+
+class Unidade {
+  - id : Long
+  - nomeUnidade : String
+}
+
+class AuthenticationToken {
+  - token : UUID
+  - funcionario : Funcionario
+  - expiraEm : long
+}
+
 class Endereco {
   - logradouro : String
   - numero : String
@@ -36,6 +76,19 @@ class Endereco {
   - cidade : String
   - estado : String
   - cep : String
+  + Endereco()
+  + static builder() : Builder
+}
+
+class "Endereco.Builder" as EnderecoBuilder {
+  + logradouro(String) : Builder
+  + numero(String) : Builder
+  + complemento(String) : Builder
+  + bairro(String) : Builder
+  + cidade(String) : Builder
+  + estado(String) : Builder
+  + cep(String) : Builder
+  + build() : Endereco
 }
 
 class CreateClienteDTO {
@@ -57,8 +110,14 @@ class UpdateClienteDTO {
 }
 
 Pessoa <|-- Cliente
-Cliente "1" -- "1" Endereco
+Pessoa <|-- Funcionario
+Funcionario "1" -- "1" Cargo
+Funcionario "0..*" -- "0..1" Unidade : trabalha em >
+AuthenticationToken "0..*" -- "1" Funcionario
+Cliente "1" -- "0..1" Endereco
 Cliente +-- ClienteBuilder
+Funcionario +-- FuncionarioBuilder
+Endereco +-- EnderecoBuilder
 CreateClienteDTO ..> Cliente
 UpdateClienteDTO ..> Cliente
 

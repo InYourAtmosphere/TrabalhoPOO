@@ -1,10 +1,19 @@
 @startuml
 skinparam classAttributeIconSize 0
 
+abstract class Pessoa {
+  - id : Long
+  - nome : String
+  - telefone : String
+  - email : String
+  - dataCadastro : LocalDateTime
+}
+
 class Cliente {
   - documentoIdentidade : String
   - documentoHabilitacao : String
-  - telefone : String
+  - endereco : Endereco
+  - ativo : boolean
 }
 
 class Funcionario {
@@ -12,47 +21,121 @@ class Funcionario {
   - cargo : Cargo
   - username : String
   - password : String
+  - unidade : Unidade
+  - ativo : boolean
 }
 
 enum Cargo {
   GERENTE
+  SUPERVISOR
   ATENDENTE
 }
 
+class AuthenticationToken {
+  - token : UUID
+  - funcionario : Funcionario
+  - expiraEm : long
+}
+
+class Endereco {
+  - logradouro : String
+  - numero : String
+  - complemento : String
+  - bairro : String
+  - cidade : String
+  - estado : String
+  - cep : String
+}
+
 class Unidade {
+  - id : Long
   - nomeUnidade : String
   - endereco : Endereco
 }
 
-class Veiculo {
-  - placa : String
+abstract class Veiculo {
+  - id : Long
   - marca : String
   - modelo : String
   - ano : Integer
+  - placa : String
+  - chassi : String
+  - kmAtual : Double
   - status : StatusVeiculo
+  - unidade : Unidade
+  - dataCadastro : LocalDateTime
+  - atualizadoEm : LocalDateTime
+  - ativo : boolean
+}
+
+class CarroPopular {
+  - quantidadePortas : int
+  - temArCondicionado : boolean
+}
+
+class Motocicleta {
+  - cilindrada : int
+  - temBau : boolean
+}
+
+enum StatusVeiculo {
+  DISPONIVEL
+  LOCADO
+  EM_MANUTENCAO
+  DESATIVADO
 }
 
 class Contrato {
+  - id : Long
   - dataInicio : LocalDateTime
   - dataFimPrevista : LocalDateTime
   - dataFimReal : LocalDateTime
+  - valorDiaria : Double
+  - valorTotal : Double
+  - status : StatusContrato
   - kmInicial : Double
   - kmFinal : Double
-  - valorTotal : Double
+  - formaPagamento : String
+}
+
+enum StatusContrato {
+  ATIVO
+  FINALIZADO
+  CANCELADO
 }
 
 class Manutencao {
+  - id : Long
+  - dataInicio : LocalDateTime
+  - dataFim : LocalDateTime
   - descricao : String
   - custo : Double
   - tipo : TipoManutencao
 }
 
-Funcionario "0..*" -- "1" Unidade : trabalha em >
+enum TipoManutencao {
+  PREVENTIVA
+  CORRETIVA
+  PREDITIVA
+}
+
+Pessoa <|-- Cliente
+Pessoa <|-- Funcionario
+Funcionario --> Cargo
+Funcionario "0..*" -- "0..1" Unidade : trabalha em >
+AuthenticationToken "0..*" -- "1" Funcionario
+Unidade "1" -- "1" Endereco
+Cliente "1" -- "0..1" Endereco
 Unidade "1" -- "0..*" Veiculo : gerencia >
+Veiculo <|-- CarroPopular
+Veiculo <|-- Motocicleta
+Veiculo --> StatusVeiculo
 Cliente "1" -- "0..*" Contrato : realiza >
 Veiculo "1" -- "0..*" Contrato : possui histórico em >
+Contrato --> StatusContrato
+Unidade "0..*" -- "1" Contrato : retirada >
+Unidade "0..*" -- "0..1" Contrato : devolução >
 Veiculo "1" -- "0..*" Manutencao : submetido a >
-Funcionario --> Cargo
-Veiculo --> StatusVeiculo
+Manutencao --> TipoManutencao
 
 @enduml
