@@ -1,21 +1,16 @@
 package org.poo.controller;
 
-import org.poo.model.Unidade;
 import org.poo.model.pessoa.Funcionario;
 import org.poo.model.veiculo.Veiculo;
-import org.poo.model.veiculo.CarroPopular;
-import org.poo.model.veiculo.Motocicleta;
 import org.poo.model.dto.request.UpdateVeiculoDTO;
 import org.poo.model.dto.request.UpdateStatusVeiculoDTO;
 import org.poo.model.dto.request.TransferenciaVeiculoDTO;
-import org.poo.repository.VeiculoRepository;
-import org.poo.repository.UnidadeRepository;
+import org.poo.service.VeiculoService;
 import org.poo.util.AuthorizationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
@@ -25,15 +20,10 @@ import java.util.Optional;
 @RequestMapping("/veiculos")
 public class VeiculoController {
 
-    private final VeiculoRepository veiculoRepository;
-    private final UnidadeRepository unidadeRepository;
-    private final ObjectMapper objectMapper;
+    private final VeiculoService veiculoService;
 
-    public VeiculoController(VeiculoRepository veiculoRepository, UnidadeRepository unidadeRepository) {
-        this.veiculoRepository = veiculoRepository;
-        this.unidadeRepository = unidadeRepository;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.findAndRegisterModules();
+    public VeiculoController(VeiculoService veiculoService) {
+        this.veiculoService = veiculoService;
     }
 
     @GetMapping
@@ -48,7 +38,7 @@ public class VeiculoController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Acesso negado: somente gerentes podem visualizar a frota de todas as unidades.");
             }
-            return ResponseEntity.ok(veiculoRepository.findAll());
+            return ResponseEntity.ok(veiculoService.listarTodos());
         }
 
         Long unidadeFiltro = unidadeId;
@@ -63,14 +53,14 @@ public class VeiculoController {
         }
 
         List<Veiculo> veiculos = unidadeFiltro != null
-                ? veiculoRepository.findByUnidade(unidadeFiltro)
-                : veiculoRepository.findAll();
+                ? veiculoService.listarPorUnidade(unidadeFiltro)
+                : veiculoService.listarTodos();
         return ResponseEntity.ok(veiculos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Veiculo> listarVeiculoPorId(@PathVariable Long id) {
-        return veiculoRepository.findById(id)
+        return veiculoService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -98,22 +88,8 @@ public class VeiculoController {
                     .body("Acesso negado: supervisores só podem registrar veículos da própria unidade.");
         }
 
-        Optional<Unidade> unidadeOpt = unidadeRepository.findById(unidadeId);
-        if (unidadeOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Unidade não encontrada");
-        }
-
         try {
-            Veiculo veiculo;
-            if ("carro".equalsIgnoreCase(tipo)) {
-                veiculo = objectMapper.convertValue(payload, CarroPopular.class);
-            } else if ("moto".equalsIgnoreCase(tipo)) {
-                veiculo = objectMapper.convertValue(payload, Motocicleta.class);
-            } else {
-                return ResponseEntity.badRequest().body("Tipo de veículo inválido");
-            }
-            veiculo.setUnidade(unidadeOpt.get());
-            return ResponseEntity.status(HttpStatus.CREATED).body(veiculoRepository.save(veiculo));
+            return ResponseEntity.status(HttpStatus.CREATED).body(veiculoService.registrar(tipo, payload, unidadeId));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Erro ao processar dados do veículo: " + e.getMessage());
         }
@@ -129,24 +105,9 @@ public class VeiculoController {
         if (erroAcesso != null) return erroAcesso;
 
         try {
-            updates.validate();
-            return veiculoRepository.findById(id).map(veiculo -> {
-                if (updates.getMarca() != null) veiculo.setMarca(updates.getMarca());
-                if (updates.getModelo() != null) veiculo.setModelo(updates.getModelo());
-                if (updates.getAno() != null) veiculo.setAno(updates.getAno());
-                if (updates.getPlaca() != null) veiculo.setPlaca(updates.getPlaca());
-                if (updates.getKmAtual() != null) veiculo.setKmAtual(updates.getKmAtual());
-                
-                if (veiculo instanceof CarroPopular carro) {
-                    if (updates.getQuantidadePortas() != null) carro.setQuantidadePortas(updates.getQuantidadePortas());
-                    if (updates.getTemArCondicionado() != null) carro.setTemArCondicionado(updates.getTemArCondicionado());
-                } else if (veiculo instanceof Motocicleta moto) {
-                    if (updates.getCilindrada() != null) moto.setCilindrada(updates.getCilindrada());
-                    if (updates.getTemBau() != null) moto.setTemBau(updates.getTemBau());
-                }
-                
-                return (ResponseEntity<?>) ResponseEntity.ok(veiculoRepository.save(veiculo));
-            }).orElse(ResponseEntity.notFound().build());
+            return veiculoService.atualizar(id, updates)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -162,12 +123,9 @@ public class VeiculoController {
         if (erroAcesso != null) return erroAcesso;
 
         try {
-            dto.validate();
-            if (veiculoRepository.findById(id).isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            veiculoRepository.updateStatus(id, dto.getStatus());
-            return ResponseEntity.ok(veiculoRepository.findById(id).get());
+            return veiculoService.atualizarStatus(id, dto)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -180,21 +138,9 @@ public class VeiculoController {
         }
 
         try {
-            dto.validate();
-            Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
-            if (veiculoOpt.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            Optional<Unidade> unidadeOpt = unidadeRepository.findById(dto.getUnidadeDestinoId());
-            if (unidadeOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body("Unidade de destino não encontrada");
-            }
-
-            Veiculo veiculo = veiculoOpt.get();
-            veiculo.setUnidade(unidadeOpt.get());
-            
-            return ResponseEntity.ok(veiculoRepository.save(veiculo));
+            return veiculoService.transferir(id, dto)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -209,15 +155,13 @@ public class VeiculoController {
         ResponseEntity<?> erroAcesso = verificarAcessoVeiculo(id, request);
         if (erroAcesso != null) return erroAcesso;
 
-        if (veiculoRepository.findById(id).isPresent()) {
-            veiculoRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        return veiculoService.deletar(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 
     private ResponseEntity<?> verificarAcessoVeiculo(Long id, HttpServletRequest request) {
-        Optional<Veiculo> veiculoOpt = veiculoRepository.findById(id);
+        Optional<Veiculo> veiculoOpt = veiculoService.buscarPorId(id);
         if (veiculoOpt.isEmpty()) {
             return null;
         }

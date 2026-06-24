@@ -2,7 +2,7 @@ package org.poo.controller;
 
 import org.poo.model.Unidade;
 import org.poo.model.dto.request.UnidadeDTO;
-import org.poo.repository.UnidadeRepository;
+import org.poo.service.UnidadeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,20 +13,20 @@ import java.util.List;
 @RequestMapping("/unidades")
 public class UnidadeController {
 
-    private final UnidadeRepository unidadeRepository;
+    private final UnidadeService unidadeService;
 
-    public UnidadeController(UnidadeRepository unidadeRepository) {
-        this.unidadeRepository = unidadeRepository;
+    public UnidadeController(UnidadeService unidadeService) {
+        this.unidadeService = unidadeService;
     }
 
     @GetMapping
     public List<Unidade> listarUnidades() {
-        return unidadeRepository.findAll();
+        return unidadeService.listarTodas();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Unidade> buscarUnidadePorId(@PathVariable Long id) {
-        return unidadeRepository.findById(id)
+        return unidadeService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -34,12 +34,7 @@ public class UnidadeController {
     @PostMapping
     public ResponseEntity<?> cadastrarUnidade(@RequestBody UnidadeDTO dto) {
         try {
-            dto.validate();
-            Unidade unidade = Unidade.builder()
-                    .nomeUnidade(dto.getNomeUnidade())
-                    .endereco(dto.getEndereco())
-                    .build();
-            return ResponseEntity.status(HttpStatus.CREATED).body(unidadeRepository.save(unidade));
+            return ResponseEntity.status(HttpStatus.CREATED).body(unidadeService.cadastrar(dto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -47,10 +42,8 @@ public class UnidadeController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarUnidade(@PathVariable Long id) {
-        if (unidadeRepository.findById(id).isPresent()) {
-            unidadeRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        return unidadeService.deletar(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }

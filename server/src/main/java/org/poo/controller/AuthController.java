@@ -1,61 +1,30 @@
 package org.poo.controller;
 
-import org.poo.model.AuthenticationToken;
-import org.poo.model.pessoa.Funcionario;
 import org.poo.model.dto.request.LoginDTO;
-import org.poo.model.dto.response.LoginResponseDTO;
-import org.poo.repository.AuthenticationTokenRepository;
-import org.poo.repository.FuncionarioRepository;
-import org.poo.util.PasswordUtils;
+import org.poo.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final FuncionarioRepository funcionarioRepository;
-    private final AuthenticationTokenRepository tokenRepository;
+    private final AuthService authService;
 
-    public AuthController(FuncionarioRepository funcionarioRepository, AuthenticationTokenRepository tokenRepository) {
-        this.funcionarioRepository = funcionarioRepository;
-        this.tokenRepository = tokenRepository;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO login) {
-        return funcionarioRepository.findByUsername(login.getUsername())
-                .filter(f -> f.getPassword() != null && PasswordUtils.verifyPassword(login.getPassword(), f.getPassword()))
-                .<ResponseEntity<?>>map(f -> {
-                    AuthenticationToken token = new AuthenticationToken();
-                    token.setToken(UUID.randomUUID());
-                    token.setFuncionario(f);
-                    token.setExpiraEm(System.currentTimeMillis() + (2 * 60 * 60 * 1000));
-
-                    tokenRepository.save(token);
-                    LoginResponseDTO response = new LoginResponseDTO(
-                            token.getToken().toString(),
-                            token.getExpiraEm(),
-                            f.getCargo().name(),
-                            f.getNome()
-                    );
-                    return ResponseEntity.ok(response);
-                })
+        return authService.login(login)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).body("Usuário ou senha inválidos"));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String tokenHeader) {
-        if (tokenHeader != null && tokenHeader.startsWith("Bearer ")) {
-            String tokenValue = tokenHeader.substring(7);
-            try {
-                tokenRepository.deleteByToken(UUID.fromString(tokenValue));
-            } catch (IllegalArgumentException e) {
-                // Token inválido, ignorar
-            }
-        }
+        authService.logout(tokenHeader);
         return ResponseEntity.ok("Logout realizado com sucesso");
     }
 }

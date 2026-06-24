@@ -3,7 +3,7 @@ package org.poo.controller;
 import org.poo.model.pessoa.Cliente;
 import org.poo.model.dto.request.UpdateClienteDTO;
 import org.poo.model.dto.request.CreateClienteDTO;
-import org.poo.repository.ClienteRepository;
+import org.poo.service.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,20 +14,20 @@ import java.util.List;
 @RequestMapping("/clientes")
 public class ClienteController {
 
-    private final ClienteRepository clienteRepository;
+    private final ClienteService clienteService;
 
-    public ClienteController(ClienteRepository clienteRepository) {
-        this.clienteRepository = clienteRepository;
+    public ClienteController(ClienteService clienteService) {
+        this.clienteService = clienteService;
     }
 
     @GetMapping
     public List<Cliente> listarClientes() {
-        return clienteRepository.findAll();
+        return clienteService.listarTodos();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Cliente> buscarClientePorId(@PathVariable Long id) {
-        return clienteRepository.findById(id)
+        return clienteService.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -35,17 +35,7 @@ public class ClienteController {
     @PostMapping
     public ResponseEntity<?> cadastrarCliente(@RequestBody CreateClienteDTO dto) {
         try {
-            dto.validate();
-            Cliente cliente = Cliente.builder()
-                    .nome(dto.getNome())
-                    .telefone(dto.getTelefone())
-                    .email(dto.getEmail())
-                    .documentoIdentidade(dto.getDocumentoIdentidade())
-                    .documentoHabilitacao(dto.getDocumentoHabilitacao())
-                    .endereco(dto.getEndereco())
-                    .build();
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(clienteRepository.save(cliente));
+            return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.cadastrar(dto));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -54,15 +44,9 @@ public class ClienteController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> atualizarCliente(@PathVariable Long id, @RequestBody UpdateClienteDTO updates) {
         try {
-            updates.validate();
-            return clienteRepository.findById(id).map(cliente -> {
-                if (updates.getNome() != null) cliente.setNome(updates.getNome());
-                if (updates.getDocumentoIdentidade() != null) cliente.setDocumentoIdentidade(updates.getDocumentoIdentidade());
-                if (updates.getDocumentoHabilitacao() != null) cliente.setDocumentoHabilitacao(updates.getDocumentoHabilitacao());
-                if (updates.getTelefone() != null) cliente.setTelefone(updates.getTelefone());
-                
-                return ResponseEntity.ok(clienteRepository.save(cliente));
-            }).orElse(ResponseEntity.notFound().build());
+            return clienteService.atualizar(id, updates)
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -70,10 +54,8 @@ public class ClienteController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarCliente(@PathVariable Long id) {
-        if (clienteRepository.findById(id).isPresent()) {
-            clienteRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        return clienteService.deletar(id)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
     }
 }
