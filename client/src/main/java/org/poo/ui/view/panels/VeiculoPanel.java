@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.poo.service.ApiException;
 import org.poo.service.UnidadeService;
 import org.poo.service.VeiculoService;
+import org.poo.ui.BannerErro;
 import org.poo.ui.Estilos;
 import org.poo.ui.SessionContext;
 import org.poo.ui.util.ExportUtils;
@@ -30,6 +31,7 @@ public class VeiculoPanel extends JPanel {
     private final JButton btnExcluir = new JButton("Excluir");
     private final JComboBox<String> comboUnidade = new JComboBox<>();
     private final Map<String, Long> idsPorNomeUnidade = new LinkedHashMap<>();
+    private final BannerErro bannerErro = new BannerErro();
     private final Timer timerAtualizacao;
 
     public VeiculoPanel() {
@@ -75,7 +77,12 @@ public class VeiculoPanel extends JPanel {
         JButton btnExportarCSV = new JButton("Exportar CSV");
         Estilos.estilizarBotaoSecundario(btnExportarCSV);
         toolbar.add(btnExportarCSV);
-        add(toolbar, BorderLayout.NORTH);
+
+        JPanel topo = new JPanel(new BorderLayout());
+        topo.setOpaque(false);
+        topo.add(toolbar, BorderLayout.NORTH);
+        topo.add(bannerErro, BorderLayout.SOUTH);
+        add(topo, BorderLayout.NORTH);
 
         String[] colunas = {"ID", "Placa", "Marca", "Modelo", "Ano", "KM", "Status", "Tipo", "Unidade"};
         tableModel = new DefaultTableModel(colunas, 0) {
@@ -238,10 +245,12 @@ public class VeiculoPanel extends JPanel {
                             }
                         }
                     }
+                    bannerErro.ocultar();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(VeiculoPanel.this,
-                            "Erro ao carregar veículos: " + ex.getMessage(),
-                            "Erro", JOptionPane.ERROR_MESSAGE);
+                    String mensagem = ApiException.isCausa(ex)
+                            ? "Erro ao carregar veículos: " + ApiException.mensagemDe(ex)
+                            : "Sem conexão com o servidor. Nova tentativa em alguns segundos...";
+                    bannerErro.mostrar(mensagem);
                 }
             }
         }.execute();
