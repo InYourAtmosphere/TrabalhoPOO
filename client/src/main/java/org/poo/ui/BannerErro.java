@@ -4,11 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-/**
- * Faixa de aviso não-modal exibida no topo de um painel. Fica oculta por padrão
- * e, ao contrário de um {@link JOptionPane}, não interrompe o usuário nem
- * empilha quando a mesma mensagem se repete (ex.: falhas de auto-refresh).
- */
 public class BannerErro extends JPanel {
 
     private static final Color FUNDO = new Color(248, 215, 218);
@@ -29,7 +24,6 @@ public class BannerErro extends JPanel {
     }
 
     public void mostrar(String mensagem) {
-        // Mesma mensagem já visível: evita re-layout repetido durante o auto-refresh.
         if (isVisible() && mensagem.equals(label.getText())) {
             return;
         }

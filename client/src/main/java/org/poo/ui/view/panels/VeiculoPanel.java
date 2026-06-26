@@ -139,7 +139,6 @@ public class VeiculoPanel extends JPanel {
                         comboUnidade.addItem(nome);
                     }
                 } catch (Exception ignored) {
-                    // Mantém apenas as opções padrão se a listagem de unidades falhar.
                 }
             }
         }.execute();
