@@ -60,6 +60,8 @@ enum Cargo {
 class Unidade {
   - id : Long
   - nomeUnidade : String
+  - endereco : Endereco
+  - veiculos : List<Veiculo>
 }
 
 class AuthenticationToken {
@@ -77,6 +79,7 @@ class Endereco {
   - estado : String
   - cep : String
   + Endereco()
+  + Endereco(String, String, String, String, String, String, String)
   + static builder() : Builder
 }
 
