@@ -15,6 +15,7 @@ import org.poo.repository.ClienteRepository;
 import org.poo.repository.ContratoRepository;
 import org.poo.repository.UnidadeRepository;
 import org.poo.repository.VeiculoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -33,6 +34,7 @@ class ContratoServiceTest {
     @Mock private ClienteRepository clienteRepository;
     @Mock private VeiculoRepository veiculoRepository;
     @Mock private UnidadeRepository unidadeRepository;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private ContratoService service;
 

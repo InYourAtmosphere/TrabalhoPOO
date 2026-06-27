@@ -9,7 +9,9 @@ import org.poo.repository.ClienteRepository;
 import org.poo.repository.ContratoRepository;
 import org.poo.repository.UnidadeRepository;
 import org.poo.repository.VeiculoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.poo.service.NotificacaoEvent.TipoEvento;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -23,15 +25,18 @@ public class ContratoService {
     private final ClienteRepository clienteRepository;
     private final VeiculoRepository veiculoRepository;
     private final UnidadeRepository unidadeRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ContratoService(ContratoRepository contratoRepository,
                            ClienteRepository clienteRepository,
                            VeiculoRepository veiculoRepository,
-                           UnidadeRepository unidadeRepository) {
+                           UnidadeRepository unidadeRepository,
+                           ApplicationEventPublisher eventPublisher) {
         this.contratoRepository = contratoRepository;
         this.clienteRepository = clienteRepository;
         this.veiculoRepository = veiculoRepository;
         this.unidadeRepository = unidadeRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<Contrato> listarTodos() {
@@ -59,6 +64,14 @@ public class ContratoService {
         veiculoRepository.findById(dto.getVeiculoId())
                 .ifPresent(v -> veiculoRepository.updateStatus(v.getId(), StatusVeiculo.LOCADO));
 
+        if (salvo.getCliente() != null) {
+            eventPublisher.publishEvent(new NotificacaoEvent(
+                salvo.getCliente().getTelefone(),
+                "Seu contrato de locação foi aberto com sucesso.",
+                TipoEvento.CONTRATO_ABERTO
+            ));
+        }
+
         return salvo;
     }
 
@@ -84,6 +97,15 @@ public class ContratoService {
 
             Contrato encerrado = contratoRepository.save(contrato);
             veiculoRepository.updateStatus(contrato.getVeiculo().getId(), StatusVeiculo.DISPONIVEL);
+
+            if (encerrado.getCliente() != null) {
+                eventPublisher.publishEvent(new NotificacaoEvent(
+                    encerrado.getCliente().getTelefone(),
+                    "Seu contrato de locação foi encerrado. Valor total: R$ " + encerrado.getValorTotal(),
+                    TipoEvento.CONTRATO_ENCERRADO
+                ));
+            }
+
             return encerrado;
         });
     }
