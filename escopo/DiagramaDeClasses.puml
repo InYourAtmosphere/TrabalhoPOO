@@ -256,4 +256,30 @@ Motocicleta +-- MotocicletaBuilder
 Manutencao +-- ManutencaoBuilder
 Contrato +-- ContratoBuilder
 
+interface NotificationService {
+  + enviar(String, String) : void
+}
+
+record NotificacaoEvent {
+  + telefone : String
+  + mensagem : String
+  + tipo : TipoEvento
+}
+
+enum TipoEvento {
+  CONTRATO_ABERTO
+  CONTRATO_ENCERRADO
+  MANUTENCAO_AGENDADA
+}
+
+class WhatsappService {
+  + enviar(String, String) : void
+  + onEvento(NotificacaoEvent) : void
+}
+
+WhatsappService ..|> NotificationService
+WhatsappService ..> NotificacaoEvent : <<@EventListener>>
+NotificacaoEvent +-- TipoEvento
+Contrato ..> NotificacaoEvent : publica >
+
 @enduml
