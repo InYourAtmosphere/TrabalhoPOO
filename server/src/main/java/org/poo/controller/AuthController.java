@@ -1,5 +1,6 @@
 package org.poo.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import org.poo.model.dto.request.LoginDTO;
 import org.poo.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @SecurityRequirements
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDTO login) {
         return authService.login(login)

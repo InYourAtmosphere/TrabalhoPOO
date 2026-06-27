@@ -56,6 +56,15 @@ mvn spring-boot:run
 
 O servidor iniciará por padrão na porta **8081**.
 
+#### Documentação da API (Swagger / OpenAPI)
+
+Com o servidor rodando, a documentação interativa fica disponível em:
+
+*   **Swagger UI:** [`http://localhost:8081/swagger-ui.html`](http://localhost:8081/swagger-ui.html)
+*   **OpenAPI JSON:** `http://localhost:8081/v3/api-docs`
+
+Para testar endpoints protegidos: faça `POST /auth/login`, copie o token retornado e cole no botão **Authorize** (esquema `bearerAuth`) do Swagger UI.
+
 ### 3. Rodar o Cliente (Desktop)
 
 Em **outro terminal**, na pasta `client/`:
