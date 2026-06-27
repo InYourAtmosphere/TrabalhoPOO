@@ -1,0 +1,74 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Atendente" as AT
+actor "Supervisor" as SV
+actor "Gerente"    as GR
+
+AT <|-- SV
+SV <|-- GR
+
+rectangle "AlugaFácil — Sistema de Gestão de Locadora" {
+
+  package "Autenticação" {
+    usecase "Fazer Login"  as UC_LOGIN
+    usecase "Fazer Logout" as UC_LOGOUT
+  }
+
+  package "Gestão de Clientes" {
+    usecase "Cadastrar Cliente"       as UC_CAD_C
+    usecase "Editar Dados do Cliente" as UC_EDIT_C
+    usecase "Desativar Cliente"       as UC_DEL_C
+  }
+
+  package "Contratos de Locação" {
+    usecase "Abrir Contrato de Locação"    as UC_ABRIR
+    usecase "Encerrar Contrato de Locação" as UC_ENCERRAR
+  }
+
+  package "Manutenção de Frota" {
+    usecase "Registrar Manutenção"                as UC_MANUT
+    usecase "Monitorar Disponibilidade\nda Frota" as UC_DISP
+  }
+
+  package "Gestão de Veículos\n(Supervisor / Gerente)" {
+    usecase "Cadastrar Veículo"           as UC_CAD_V
+    usecase "Editar Dados do Veículo"     as UC_EDIT_V
+    usecase "Atualizar Status do Veículo" as UC_STATUS_V
+    usecase "Desativar Veículo"           as UC_DEL_V
+  }
+
+  package "Gestão de Equipe\n(Supervisor / Gerente)" {
+    usecase "Gerenciar Funcionários\nda Unidade" as UC_FUNC
+  }
+
+  package "Administração\n(Gerente)" {
+    usecase "Transferir Veículo\nentre Unidades" as UC_TRANSF
+    usecase "Gerenciar Unidades"                 as UC_UNID
+    usecase "Visualizar Dashboard\nEstratégico"  as UC_DASH
+  }
+}
+
+AT --> UC_LOGIN
+AT --> UC_LOGOUT
+AT --> UC_DISP
+AT --> UC_CAD_C
+AT --> UC_EDIT_C
+AT --> UC_DEL_C
+AT --> UC_ABRIR
+AT --> UC_ENCERRAR
+AT --> UC_MANUT
+
+SV --> UC_CAD_V
+SV --> UC_EDIT_V
+SV --> UC_STATUS_V
+SV --> UC_DEL_V
+SV --> UC_FUNC
+
+GR --> UC_TRANSF
+GR --> UC_UNID
+GR --> UC_DASH
+
+@enduml
