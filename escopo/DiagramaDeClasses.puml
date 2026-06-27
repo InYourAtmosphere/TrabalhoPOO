@@ -9,6 +9,7 @@ class Endereco {
   - estado : String
   - cep : String
   + Endereco()
+  + Endereco(String, String, String, String, String, String, String)
   + static builder() : Builder
 }
 
@@ -40,6 +41,17 @@ class Cliente {
   + static builder() : Builder
 }
 
+class "Cliente.Builder" as ClienteBuilder {
+  + nome(String) : Builder
+  + telefone(String) : Builder
+  + email(String) : Builder
+  + documentoIdentidade(String) : Builder
+  + documentoHabilitacao(String) : Builder
+  + endereco(Endereco) : Builder
+  + ativo(boolean) : Builder
+  + build() : Cliente
+}
+
 class Funcionario {
   - matricula : String
   - cargo : Cargo
@@ -48,6 +60,19 @@ class Funcionario {
   - unidade : Unidade
   - ativo : boolean
   + static builder() : Builder
+}
+
+class "Funcionario.Builder" as FuncionarioBuilder {
+  + nome(String) : Builder
+  + telefone(String) : Builder
+  + email(String) : Builder
+  + matricula(String) : Builder
+  + cargo(Cargo) : Builder
+  + username(String) : Builder
+  + password(String) : Builder
+  + unidade(Unidade) : Builder
+  + ativo(boolean) : Builder
+  + build() : Funcionario
 }
 
 enum Cargo {
@@ -106,10 +131,36 @@ class CarroPopular {
   + static builder() : Builder
 }
 
+class "CarroPopular.Builder" as CarroPopularBuilder {
+  + marca(String) : Builder
+  + modelo(String) : Builder
+  + ano(Integer) : Builder
+  + placa(String) : Builder
+  + chassi(String) : Builder
+  + kmAtual(Double) : Builder
+  + unidade(Unidade) : Builder
+  + quantidadePortas(int) : Builder
+  + temArCondicionado(boolean) : Builder
+  + build() : CarroPopular
+}
+
 class Motocicleta {
   - cilindrada : int
   - temBau : boolean
   + static builder() : Builder
+}
+
+class "Motocicleta.Builder" as MotocicletaBuilder {
+  + marca(String) : Builder
+  + modelo(String) : Builder
+  + ano(Integer) : Builder
+  + placa(String) : Builder
+  + chassi(String) : Builder
+  + kmAtual(Double) : Builder
+  + unidade(Unidade) : Builder
+  + cilindrada(int) : Builder
+  + temBau(boolean) : Builder
+  + build() : Motocicleta
 }
 
 class Manutencao {
@@ -197,7 +248,11 @@ Contrato "1" -- "1" StatusContrato
 Unidade "0..*" -- "1" Contrato : retirada >
 Unidade "0..*" -- "0..1" Contrato : devolução >
 Endereco +-- EnderecoBuilder
+Cliente +-- ClienteBuilder
+Funcionario +-- FuncionarioBuilder
 Unidade +-- UnidadeBuilder
+CarroPopular +-- CarroPopularBuilder
+Motocicleta +-- MotocicletaBuilder
 Manutencao +-- ManutencaoBuilder
 Contrato +-- ContratoBuilder
 
