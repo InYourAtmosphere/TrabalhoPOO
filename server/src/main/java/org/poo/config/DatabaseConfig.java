@@ -6,24 +6,27 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
 
 public class DatabaseConfig {
-    private static final String URL = "jdbc:sqlite:alugafacil.db";
+    private static final String URL = "jdbc:postgresql://localhost:5432/trabalhopoo";
+    private static final String USER = "user";
+    private static final String PASSWORD = "password";
 
     public static Connection getConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(URL);
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute("PRAGMA foreign_keys = ON");
-            stmt.execute("PRAGMA journal_mode = WAL");
+        try {
+            Class.forName("org.postgresql.Driver");
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Erro ao se conectar ao banco de dados: ", e);
         }
-        return conn;
     }
 
     public static void initializeDatabase() {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              InputStream is = DatabaseConfig.class.getClassLoader().getResourceAsStream("schema.sql")) {
-
+            
             if (is == null) {
                 System.err.println("Arquivo schema.sql não encontrado nos resources.");
                 return;
@@ -31,15 +34,9 @@ public class DatabaseConfig {
 
             String sql = new String(is.readAllBytes(), StandardCharsets.UTF_8);
 
-            for (String statement : sql.split(";")) {
-                String trimmed = statement.trim();
-                if (!trimmed.isEmpty()) {
-                    stmt.execute(trimmed);
-                }
-            }
-
+            stmt.execute(sql);
             System.out.println("Banco de dados inicializado com sucesso.");
-
+            
         } catch (Exception e) {
             System.err.println("Erro ao inicializar o banco de dados: " + e.getMessage());
         }

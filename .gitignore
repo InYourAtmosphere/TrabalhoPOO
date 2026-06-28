@@ -1,6 +1,2 @@
 target/
 .idea/
-*.db
-*.db-shm
-*.db-wal
-pg_hba.conf
