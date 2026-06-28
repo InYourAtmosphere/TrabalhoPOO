@@ -9,7 +9,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class DatabaseConfig {
-    private static final String URL = "jdbc:postgresql://localhost:5432/trabalhopoo";
+    private static final String HOST = System.getenv().getOrDefault("DB_HOST", "localhost");
+    private static final String URL = "jdbc:postgresql://" + HOST + ":5432/trabalhopoo";
     private static final String USER = "user";
     private static final String PASSWORD = "password";
 

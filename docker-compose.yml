@@ -13,6 +13,22 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d trabalhopoo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build: ./server
+    container_name: alugafacil_server
+    environment:
+      DB_HOST: db
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
 
   pgadmin:
     image: dpage/pgadmin4
