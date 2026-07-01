@@ -65,6 +65,16 @@ Com o servidor rodando, a documentação interativa fica disponível em:
 
 Para testar endpoints protegidos: faça `POST /auth/login`, copie o token retornado e cole no botão **Authorize** (esquema `bearerAuth`) do Swagger UI.
 
+#### Usuários padrão (gerados pelo `schema.sql`)
+
+| Username  | Senha      | Cargo      |
+|-----------|------------|------------|
+| `admin`   | `admin123` | GERENTE    |
+| `carlos`  | `admin123` | ATENDENTE  |
+| `ana`     | `admin123` | ATENDENTE  |
+| `bruno`   | `admin123` | GERENTE    |
+| `sofia`   | `admin123` | SUPERVISOR |
+
 ### 3. Rodar o Cliente (Desktop)
 
 Em **outro terminal**, na pasta `client/`:
@@ -94,9 +104,9 @@ mvn package
 java -Dalugafacil.api.url=http://IP_DO_SERVIDOR:8081 -jar target/AlugaFacilClient-1.0-SNAPSHOT.jar
 ```
 
-## 🐳 Como Rodar o Banco com Docker
+## 🐳 Como Rodar com Docker
 
-O projeto inclui um arquivo `docker-compose.yml` na raiz para facilitar a configuração do ambiente de banco de dados.
+O projeto inclui um arquivo `docker-compose.yml` na raiz que sobe todo o ambiente de uma vez.
 
 ### 1. Iniciar os Serviços
 
@@ -108,7 +118,10 @@ docker-compose up -d
 
 Isso iniciará:
 *   **PostgreSQL**: O banco de dados para a aplicação (Porta 5432).
+*   **server**: A API REST do AlugaFácil (Porta 8081).
 *   **pgAdmin**: Interface web para gerenciar o banco (Porta 8080).
+
+> **Nota:** com o `docker-compose`, o servidor já estará no ar. Não é necessário rodar `mvn spring-boot:run` separadamente — só suba o cliente (passo 3 da seção [Como Rodar o Projeto](#-como-rodar-o-projeto)).
 
 ### 2. Acessar o pgAdmin
 
@@ -127,6 +140,6 @@ Para conectar ao banco dentro do pgAdmin:
     * **Username:** `user`
     * **Password:** `password`
 
-### 3. Rodar o Servidor e o Cliente
+### 3. Rodar o Cliente
 
-Com o banco ativo no Docker, siga os passos 2 e 3 da seção [Como Rodar o Projeto](#-como-rodar-o-projeto) acima.
+Com o Docker ativo, o banco e o servidor já estão rodando. Suba apenas o cliente (passo 3 da seção [Como Rodar o Projeto](#-como-rodar-o-projeto)).
